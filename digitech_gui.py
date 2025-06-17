@@ -56,7 +56,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         except: pass
 
     root = tk.Tk()
-    root.title("Digitech Command Sender")
+    root.title("TB Cmd Interface")
     frm = ttk.Frame(root, padding=10)
     frm.grid()
     row = 0
@@ -81,15 +81,27 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         ("Set underV", 'setundv', ("Thr (V):", tk.StringVar(), ttk.Entry), None),
         ("Set overTemp", 'setovert', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
         ("Set underTemp", 'setundt', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
-        ("Get configuration", 'getconf', None, None)
+        ("Get configuration", 'getconf', None, None),
+        ("Print help", 'help', None, None)
     ]
 
+    # Store references to StringVars for clearing
+    button_vars = []
+
     for label, cmd, arg1, arg2 in buttons:
+        def make_cmd_callback(c=cmd, a1=arg1, a2=arg2):
+            def callback():
+                send(c,
+                     a1[1].get() if a1 else None,
+                     a2[1].get() if a2 else None)
+                # Reset fields for numeric threshold commands
+                if c in {'setdac', 'setoverv', 'setundv', 'setovert', 'setundt', 'setid'}:
+                    if a1: a1[1].set('')
+                    if a2: a2[1].set('')
+            return callback
+
         ttk.Button(frm, text=label, width=14,
-                   command=(lambda c=cmd, a1=arg1, a2=arg2:
-                            send(c,
-                                 a1[1].get() if a1 else None,
-                                 a2[1].get() if a2 else None))
+                   command=make_cmd_callback()
                   ).grid(column=0, row=row, pady=2, sticky='w')
         col = 1
         for arg in (arg1, arg2):
