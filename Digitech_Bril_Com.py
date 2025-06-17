@@ -3,6 +3,7 @@ import serial
 import threading
 import time
 import datetime
+import digitech_gui
 
 
 
@@ -236,7 +237,7 @@ def listen_for_commands(ser):
                             print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")
 
                     except:
-                        print('Errorin conversion')
+                        print('Error in conversion')
                     
                 
                 #GET DAC THR
@@ -313,7 +314,7 @@ def listen_for_commands(ser):
                             print(f"[Error] Invalid command ({cmd}). Example: setdac")
 
                     except:
-                        print('Errorin conversion')
+                        print('Error in conversion')
                 
 
                 #SET OVERV
@@ -336,7 +337,7 @@ def listen_for_commands(ser):
                             print(f"[Error] Invalid command ({cmd}). Example: setdac")
 
                     except:
-                        print('Errorin conversion')
+                        print('Error in conversion')
 
                 #SET OVERV
                 elif cmd == 'setovert':
@@ -361,7 +362,7 @@ def listen_for_commands(ser):
                             print(f"[Error] Invalid command ({cmd}). Example: setovert 50.5")
 
                     except:
-                        print('Errorin conversion')
+                        print('Error in conversion')
                 
                 #SET UNDERTEMPERATURE
                 elif cmd == 'setundt':
@@ -386,7 +387,7 @@ def listen_for_commands(ser):
                             print(f"[Error] Invalid command ({cmd}). Example: setundt -5.5")
 
                     except:
-                        print('Errorin conversion')
+                        print('Error in conversion')
 
                 #GET CONFIG
                 elif cmd == 'getconf':
@@ -416,6 +417,12 @@ def main():
             print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud...")
             threading.Thread(target=read_from_serial, args=(ser,), daemon=True).start()
             threading.Thread(target=periodic_trigger_msg, args=(ser,trigger_period), daemon=True).start()
+            # Start GUI in a separate thread, passing required objects
+            threading.Thread(
+                target=digitech_gui.start_gui,
+                args=(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID),
+                daemon=True
+            ).start()
             listen_for_commands(ser)
     except serial.SerialException as e:
         print(f"Serial error: {e}")
