@@ -1,3 +1,4 @@
+from logging import root
 import tkinter as tk
 from tkinter import ttk
 
@@ -57,11 +58,18 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
 
     root = tk.Tk()
     root.title("TB Cmd Interface")
+
+    # --- Add a centered title label at the top ---
+    title_font = ("Helvetica", 18, "bold")  # Use a macOS-friendly font
+    title_label = tk.Label(root, text="TB Command Interface", font=title_font, anchor="center")
+    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20), sticky="ew")
+    # ---------------------------------------------
+
     # Create two main frames for two columns
     left_frame = ttk.Frame(root, padding=10)
     right_frame = ttk.Frame(root, padding=10)
-    left_frame.grid(row=0, column=0, sticky='n')
-    right_frame.grid(row=0, column=1, sticky='n')
+    left_frame.grid(row=1, column=0, sticky='n')
+    right_frame.grid(row=1, column=1, sticky='n')
 
     def channel_dropdown(var):
         return ttk.OptionMenu(right_frame, var, 'a', *DAC_CHANNELS_ID.keys())
@@ -115,8 +123,12 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
                      a2[1].get() if a2 else None)
                 # Reset fields for numeric threshold commands
                 if c in {'setdac', 'setoverv', 'setundv', 'setovert', 'setundt', 'setid'}:
-                    if a1: a1[1].set('')
-                    if a2: a2[1].set('')
+                    if c == 'setdac':
+                        # if a1: a1[1].set('a')  # Always reset channel to 'a'
+                        if a2: a2[1].set('')
+                    else:
+                        if a1: a1[1].set('')
+                        if a2: a2[1].set('')
             return callback
         ttk.Button(right_frame, text=label, width=18,
                    command=make_cmd_callback()
