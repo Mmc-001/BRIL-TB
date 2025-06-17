@@ -6,7 +6,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
 
     def send(cmd, arg1=None, arg2=None):
         try:
-            if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf'}:
+            if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf','help'}:
                 formatted = format_command(cmd, 0)
             elif cmd == 'settime':
                 payload = datetime.datetime.now().strftime("%H%M%S").encode("ascii")
@@ -76,7 +76,6 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         ("Get temperature", 'gettemp', None, None),
         ("Reset", 'reset', None, None),
         ("Get configuration", 'getconf', None, None),
-        ("Print help", 'help', None, None),
         # Argument commands start here
         ("Set DAC", 'setdac', ("Channel:", tk.StringVar(value='a'), channel_dropdown), ("Thr (V):", tk.StringVar(), ttk.Entry)),
         ("Set ID", 'setid', ("New ID:", tk.StringVar(), ttk.Entry), None),
@@ -84,6 +83,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         ("Set underV", 'setundv', ("Thr (V):", tk.StringVar(), ttk.Entry), None),
         ("Set overTemp", 'setovert', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
         ("Set underTemp", 'setundt', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
+        ("Print help", 'help', None, None),
     ]
 
     # Store references to StringVars for clearing
