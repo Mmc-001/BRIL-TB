@@ -70,7 +70,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         ("Get data", 'getdata', None, None),
         ("Set date (now)", 'setdate', None, None),
         ("Set time (now)", 'settime', None, None),
-        ("Get date and time", 'getdatetime', None, None),
+        ("Get datetime", 'getdatetime', None, None),
         ("Get DAC", 'getdac', None, None),
         ("Get ID", 'getid', None, None),
         ("Get temperature", 'gettemp', None, None),
