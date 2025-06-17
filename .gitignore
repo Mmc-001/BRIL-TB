@@ -4,3 +4,5 @@ scan_threshold/
 test-scheda-digi-09_06.docx
 .DS_Store
 local/
+received_data.txt
+command_log.txt
