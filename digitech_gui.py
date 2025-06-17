@@ -59,10 +59,30 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     root = tk.Tk()
     root.title("TB Cmd Interface")
 
-    # --- Add a centered title label at the top ---
-    title_font = ("Helvetica", 18, "bold")  # Use a macOS-friendly font
-    title_label = tk.Label(root, text="TB Command Interface", font=title_font, anchor="center")
-    title_label.grid(row=0, column=0, columnspan=2, pady=(10, 20), sticky="ew")
+    # --- Add a framed, centered title label at the top ---
+    title_font = ("Consolas", 18, "bold")  # Try Consolas first
+    try:
+        import tkinter.font as tkfont
+        available = tkfont.families()
+        if "Consolas" in available:
+            title_font[0] = "Consolas"
+        elif "Menlo" in available:
+            title_font[0] = "Menlo"
+        elif "Courier New" in available:
+            title_font[0] = "Courier New"
+    except:
+        pass
+
+    title_frame = tk.Frame(root, bd=2, relief="groove", bg="#FE5000")
+    title_frame.grid(row=0, column=0, columnspan=2, pady=(10, 20), sticky="ew", padx=10)
+
+    title_label = tk.Label(
+        title_frame,
+        text="TetraBall Command Interface",
+        font=title_font,
+        anchor="center",
+    )
+    title_label.pack(fill="both", expand=True, padx=10, pady=5)
     # ---------------------------------------------
 
     # Create two main frames for two columns
