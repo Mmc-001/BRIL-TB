@@ -418,12 +418,14 @@ def main():
             threading.Thread(target=read_from_serial, args=(ser,), daemon=True).start()
             threading.Thread(target=periodic_trigger_msg, args=(ser,trigger_period), daemon=True).start()
             # Start GUI in a separate thread, passing required objects
-            threading.Thread(
-                target=digitech_gui.start_gui,
-                args=(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID),
-                daemon=True
-            ).start()
-            listen_for_commands(ser)
+            # threading.Thread(
+                # target=digitech_gui.start_gui,
+                # args=(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID),
+                # daemon=True
+            # ).start()
+            # listen_for_commands(ser)
+            threading.Thread(target=listen_for_commands, args=(ser,), daemon=True).start()
+            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID)
     except serial.SerialException as e:
         print(f"Serial error: {e}")
     except KeyboardInterrupt:
