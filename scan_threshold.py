@@ -112,16 +112,16 @@ class MainWindow(tk.Tk):
         self.btnFile.grid(row=1, column=5, padx=(2, 5), pady=(5, 0), sticky=tk.W)
         
         # Threshold range controls
-        self.lblThresholdMin = tk.Label(master=self, text='Threshold min:', font='sans 10')
+        self.lblThresholdMin = tk.Label(master=self, text='Threshold min (mV):', font='sans 10')
         self.lblThresholdMin.grid(row=2, column=0, padx=(5, 2), pady=(5, 0), sticky=tk.E)
-        self.spbThresholdMin = tk.Spinbox(master=self, from_=0, to=1000, width=5, font="sans 10")
+        self.spbThresholdMin = tk.Spinbox(master=self, from_=125, to=1000, width=5, font="sans 10")
         self.spbThresholdMin.grid(row=2, column=1, padx=(2, 5), pady=(5, 0), sticky=tk.W)
         self.spbThresholdMin.delete(0, tk.END)
         self.spbThresholdMin.insert(0, 125)
 
-        self.lblThresholdMax = tk.Label(master=self, text='Threshold max:', font='sans 10')
+        self.lblThresholdMax = tk.Label(master=self, text='Threshold max (mV):', font='sans 10')
         self.lblThresholdMax.grid(row=2, column=2, padx=(5, 2), pady=(5, 0), sticky=tk.E)
-        self.spbThresholdMax = tk.Spinbox(master=self, from_=0, to=1000, width=5, font="sans 10")
+        self.spbThresholdMax = tk.Spinbox(master=self, from_=125, to=1000, width=5, font="sans 10")
         self.spbThresholdMax.grid(row=2, column=3, padx=(2, 5), pady=(5, 0), sticky=tk.W)
         self.spbThresholdMax.delete(0, tk.END)
         self.spbThresholdMax.insert(0, 525)
@@ -129,6 +129,14 @@ class MainWindow(tk.Tk):
         # Move Scan Threshold button down
         self.btnLoop = tk.Button(master=self, command=self.start_loop, text='Scan Threshold')
         self.btnLoop.grid(row=3, column=0, columnspan=6, padx=5, pady=5)
+
+        # Threshold step control
+        self.lblThresholdStep = tk.Label(master=self, text='Step (mV):', font='sans 10')
+        self.lblThresholdStep.grid(row=2, column=4, padx=(5, 2), pady=(5, 0), sticky=tk.E)
+        self.spbThresholdStep = tk.Spinbox(master=self, from_=3, to=1000, width=5, font="sans 10")
+        self.spbThresholdStep.grid(row=2, column=5, padx=(2, 5), pady=(5, 0), sticky=tk.W)
+        self.spbThresholdStep.delete(0, tk.END)
+        self.spbThresholdStep.insert(0, 50)
 
         self.scan_serialports()
         #
@@ -169,6 +177,7 @@ class MainWindow(tk.Tk):
 
             min_threshold = int(self.spbThresholdMin.get())
             max_threshold = int(self.spbThresholdMax.get())
+            step = int(self.spbThresholdStep.get())
             
             with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(self.txtFile.get(), "w") as output_file:
                 
@@ -194,7 +203,7 @@ class MainWindow(tk.Tk):
                 output_file.write("THRESHOLD\n")
                 output_file.flush()
                 
-                for mv in range(min_threshold, max_threshold + 1, 50):    # ciclo sulle soglie
+                for mv in range(min_threshold, max_threshold + 1, step):    # ciclo sulle soglie
                     for grp in CHANNELS_GROUPS:    # ciclo sui dac
                         if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setDAC", grp+str(mv).rjust(4, "0"))):
                             raise RuntimeError("Communication error.")
