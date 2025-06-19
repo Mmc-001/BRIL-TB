@@ -93,6 +93,11 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         # Called periodically in mainloop
         while not serial_queue.empty():
             line = serial_queue.get()
+            # Show every serial message visually
+            if line.startswith('>'):
+                show_serial_feedback(line, color='green' if 'ACK' in line else 'blue')
+            elif line:
+                show_serial_feedback(line, color='black')
             # Try to parse getdac output: e.g. '>DAC: a=1.234 b=2.345 ...'
             if line.startswith('>') and 'DAC:' in line:
                 try:
@@ -117,6 +122,17 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         for ch in DAC_CHANNELS_ID.keys():
             if not getdac_values[ch].get() and last_setdac[ch] is not None:
                 getdac_values[ch].set(last_setdac[ch])
+
+    # Visual feedback variable for last serial message
+    serial_feedback_var = tk.StringVar(value='')
+
+    def show_serial_feedback(msg, color=None):
+        serial_feedback_var.set(msg)
+        if color:
+            serial_feedback_label.config(foreground=color)
+        else:
+            serial_feedback_label.config(foreground='black')
+        root.after(3000, lambda: serial_feedback_var.set(''))  # Clear after 3s
 
     # Notebook (tabs)
     notebook = ttk.Notebook(root)
@@ -275,6 +291,10 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         ttk.Label(getdac_group, textvariable=getdac_values[ch], relief="sunken", width=7).grid(row=1, column=idx, padx=5, pady=2)
 
     ttk.Button(getdac_group, text="Get All DACs", command=getdac_all).grid(row=2, column=0, columnspan=8, pady=10)
+
+    # Place serial feedback label at the top right of the main window
+    serial_feedback_label = ttk.Label(title_frame, textvariable=serial_feedback_var, font=(title_font[0], 12, 'bold'))
+    serial_feedback_label.pack(side='right', padx=10)
 
     # Start serial reader thread if not DummySerial
     if hasattr(ser, 'in_waiting'):
