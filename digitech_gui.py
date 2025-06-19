@@ -294,8 +294,14 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         .grid(column=2, row=max_rows, columnspan=2, pady=8, sticky='ew')
 
     # --- Help button ---
+    help_win_ref = {'window': None}
     def show_help():
+        if help_win_ref['window'] is not None and tk.Toplevel.winfo_exists(help_win_ref['window']):
+            help_win_ref['window'].lift()
+            help_win_ref['window'].focus_force()
+            return
         help_win = tk.Toplevel(root)
+        help_win_ref['window'] = help_win
         help_win.title("Help")
         help_win.resizable(width=False, height=False)  # Make help window unresizable
         # Estimate width and height from HELP_CMD_MSG
@@ -307,9 +313,15 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         help_text.insert("1.0", HELP_CMD_MSG)
         help_text.config(state="disabled")
         help_text.pack(padx=10, pady=10, fill="both", expand=True)
-        ttk.Button(help_win, text="Close", command=help_win.destroy).pack(pady=5)
+        def close_help():
+            help_win_ref['window'] = None
+            help_win.destroy()
+        ttk.Button(help_win, text="Close", command=close_help).pack(pady=5)
+        help_win.protocol("WM_DELETE_WINDOW", close_help)
 
-    ttk.Button(help_frame, text="Help", width=18, command=show_help).pack(pady=2)
+    help_frame.grid_columnconfigure(0, weight=1)
+    help_frame.grid_columnconfigure(1, weight=1)
+    ttk.Button(help_frame, text="Print Command Help", command=show_help).grid(row=0, column=0, columnspan=2, pady=2)
 
     root.mainloop()
 
