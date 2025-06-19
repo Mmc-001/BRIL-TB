@@ -8,7 +8,9 @@ import digitech_gui
 
 
 # Configure serial port
-SERIAL_PORT = 'COM4'#'COM17'# Change to your port, e.g., '/dev/ttyUSB0' on Linux
+SERIAL_PORT = 'COM6'#Change to your port, e.g., '/dev/ttyUSB0' on Linux
+# PC ANET: COM4 (USB destra)
+# Mini PC: COM6 (USB bassa lato alimentazione)
 BAUD_RATE = 115200
 OUTPUT_FILE = 'received_data.txt'
 CTRL_LOG_FILE = 'command_log.txt'
