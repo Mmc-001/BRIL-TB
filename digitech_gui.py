@@ -2,11 +2,27 @@ from logging import root
 import tkinter as tk
 from tkinter import ttk
 
-# Import the help message from Digitech_Bril_Com.py
-try:
-    from Digitech_Bril_Com import HELP_CMD_MSG
-except ImportError:
-    HELP_CMD_MSG = "Help message not available."
+HELP_CMD_MSG = """
+USER INPUT    OPCODE              Description
+=========================================
+    getStatus     a (0x61)	 Get Status		    
+    getData       b (0x62)	 Get Data		    
+    SetDate       c (0x63)	 Set Date		    
+    SetTime       d (0x64)	 Set Time		    
+    getDateTime   e (0x65)	 Get Date and Time	
+    getDAC        f (0x66)	 Get DAC Threshold	
+    setDAC        g (0x67)	 Set DAC Threshold	
+    getTemp       h (0x68)	 Get Temperature		
+    reset         i (0x69)	 Soft Reset		    
+    setID         j (0x6a)	 Set Board ID		
+    getID         k (0x6b)	 Get Board ID	
+    setoverv      l          Set Over Voltage Threshold
+    setundv       m          Set Under Voltage Threshold
+    setovert      n          Set Overtemperature Threshold
+    setundt       o          Set Undergemperature Threshold
+    getconf       p          Get Voltage and Temp Threshold Configuration    
+    help        (--local)    Print this help message	
+"""
 
 def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     import datetime
@@ -64,6 +80,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
 
     root = tk.Tk()
     root.title("TB Cmd Interface")
+    root.resizable(width=True, height=False)  # Make window unresizable vertically
 
     # --- Add a framed, centered title label at the top ---
     title_font = ("Consolas", 18, "bold")  # Try Consolas first
@@ -101,10 +118,9 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     dac_frame.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
     id_frame = ttk.LabelFrame(root, text="Board ID", padding=10)
     id_frame.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
-    volt_frame = ttk.LabelFrame(root, text="Voltage Thresholds", padding=10)
-    volt_frame.grid(row=3, column=0, sticky='ew', padx=5, pady=5)
-    temp_frame = ttk.LabelFrame(root, text="Temperature Thresholds", padding=10)
-    temp_frame.grid(row=3, column=1, sticky='ew', padx=5, pady=5)
+    # Combine Voltage and Temperature Thresholds into a single frame with two subcolumns
+    thresholds_frame = ttk.LabelFrame(root, text="Voltage & Temperature Thresholds", padding=10)
+    thresholds_frame.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
     help_frame = ttk.LabelFrame(root, text="Help", padding=10)
     help_frame.grid(row=4, column=0, columnspan=2, sticky='ew', padx=5, pady=10)
     # Make columns expand equally
@@ -119,17 +135,17 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     board_buttons = [
         ("Reset", 'reset', None, None),
         ("Get status", 'getstatus', None, None),
-        ("Get configuration", 'getconf', None, None),
+        ("Get data", 'getdata', None, None),
     ]
     # Date & Time
     datetime_buttons = [
         ("Set date (now)", 'setdate', None, None),
         ("Set time (now)", 'settime', None, None),
-        ("Get datetime", 'getdatetime', None, None),
+        ("Get date&time", 'getdatetime', None, None),
     ]
     # DAC
     dac_buttons = [
-        ("Set DAC", 'setdac', ("Channel:", tk.StringVar(value='a'), channel_dropdown), ("Thr (V):", tk.StringVar(), ttk.Entry)),
+        ("Set DAC", 'setdac', ("CHN:", tk.StringVar(value='a'), channel_dropdown), ("THR (V):", tk.StringVar(), ttk.Entry)),
         ("Get DAC", 'getdac', None, None),
     ]
     # Voltage Thresholds
@@ -164,29 +180,43 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
                             if a1: a1[1].set('')
                             if a2: a2[1].set('')
                 return callback
-            # Special layout for setdac: channel selector and label on first line, threshold input on second, button on third
+            # Special layout for setdac: channel selector and threshold input on the same row, button below
             if cmd == 'setdac':
                 arg_label1, arg_var1, arg_widget1 = arg1
+                arg_label2, arg_var2, arg_widget2 = arg2
                 ttk.Label(frame, text=arg_label1).grid(column=0, row=row, sticky='w', padx=(0,2))
                 channel_dropdown(arg_var1).grid(column=1, row=row, sticky='w', padx=(0,8))
-                row += 1
-                arg_label2, arg_var2, arg_widget2 = arg2
-                ttk.Label(frame, text=arg_label2).grid(column=0, row=row, sticky='w', padx=(0,2))
-                arg_widget2(frame, textvariable=arg_var2, width=7).grid(column=1, row=row, sticky='w', padx=(0,8))
-                row += 1
+                ttk.Label(frame, text=arg_label2).grid(column=2, row=row, sticky='w', padx=(0,2))
+                arg_widget2(frame, textvariable=arg_var2, width=7).grid(column=3, row=row, sticky='w', padx=(0,8))
                 frame.grid_columnconfigure(0, weight=1)
                 frame.grid_columnconfigure(1, weight=1)
+                frame.grid_columnconfigure(2, weight=1)
+                frame.grid_columnconfigure(3, weight=1)
+                row += 1
                 ttk.Button(frame, text=label,
                            command=make_cmd_callback()
-                          ).grid(column=0, row=row, columnspan=2, pady=4, sticky='ew')
+                          ).grid(column=0, row=row, columnspan=4, pady=4, sticky='ew')
                 row += 1
-            # For getdac and getid, make button expand to frame width
+            # Special layout for setid: input/label and both buttons expand to frame width
+            elif cmd == 'setid':
+                arg_label, arg_var, arg_widget = arg1
+                ttk.Label(frame, text=arg_label).grid(column=0, row=row, sticky='w', padx=(0,2))
+                arg_widget(frame, textvariable=arg_var, width=7).grid(column=1, row=row, columnspan=3, sticky='ew', padx=(0,8))
+                for c in range(4):
+                    frame.grid_columnconfigure(c, weight=1)
+                row += 1
+                ttk.Button(frame, text=label,
+                           command=make_cmd_callback()
+                          ).grid(column=0, row=row, columnspan=4, pady=4, sticky='ew')
+                row += 1
+            # For getdac and getid, make button expand to fill the frame width
             elif cmd in {'getdac', 'getid'}:
-                frame.grid_columnconfigure(0, weight=1)
-                frame.grid_columnconfigure(1, weight=1)
+                # Make the Get DAC button expand to fill the frame width
+                for c in range(4):
+                    frame.grid_columnconfigure(c, weight=1)
                 ttk.Button(frame, text=label,
                            command=make_cmd_callback()
-                          ).grid(column=0, row=row, columnspan=2, pady=4, sticky='ew')
+                          ).grid(column=0, row=row, columnspan=4, pady=4, sticky='ew')
                 row += 1
             # For other commands with arguments: each arg-label/input on its own line, button below
             elif arg1 or arg2:
@@ -194,13 +224,10 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
                     if arg:
                         arg_label, arg_var, arg_widget = arg
                         ttk.Label(frame, text=arg_label).grid(column=0, row=row, sticky='w', padx=(0,2))
-                        if arg_widget == channel_dropdown:
-                            arg_widget(arg_var).grid(column=1, row=row, sticky='w', padx=(0,8))
-                        else:
-                            arg_widget(frame, textvariable=arg_var, width=7).grid(column=1, row=row, sticky='w', padx=(0,8))
+                        arg_widget(frame, textvariable=arg_var, width=7).grid(column=1, row=row, sticky='w', padx=(0,8))
+                        frame.grid_columnconfigure(0, weight=1)
+                        frame.grid_columnconfigure(1, weight=1)
                         row += 1
-                frame.grid_columnconfigure(0, weight=1)
-                frame.grid_columnconfigure(1, weight=1)
                 ttk.Button(frame, text=label,
                            command=make_cmd_callback()
                           ).grid(column=0, row=row, columnspan=2, pady=4, sticky='ew')
@@ -215,15 +242,68 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     add_buttons(board_frame, board_buttons)
     add_buttons(datetime_frame, datetime_buttons)
     add_buttons(dac_frame, dac_buttons)
-    add_buttons(volt_frame, volt_buttons)
-    add_buttons(temp_frame, temp_buttons)
     add_buttons(id_frame, id_buttons)
+
+    # Combine Voltage and Temperature Thresholds into a single frame with two subcolumns
+    # Remove old volt_frame and temp_frame definitions and usage
+    # Define volt and temp threshold buttons
+    volt_buttons = [
+        ("Set overV", 'setoverv', ("Thr (V):", tk.StringVar(), ttk.Entry), None),
+        ("Set underV", 'setundv', ("Thr (V):", tk.StringVar(), ttk.Entry), None),
+    ]
+    temp_buttons = [
+        ("Set overTemp", 'setovert', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
+        ("Set underTemp", 'setundt', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
+    ]
+    # Helper to create a button+input vertical block in a given column
+    def add_vertical_buttons(frame, buttons, col, start_row):
+        row = start_row
+        for label, cmd, arg1, arg2 in buttons:
+            def make_cmd_callback(c=cmd, a1=arg1, a2=arg2):
+                def callback():
+                    send(c,
+                         a1[1].get() if a1 else None,
+                         a2[1].get() if a2 else None)
+                    if c in {'setoverv', 'setundv', 'setovert', 'setundt'}:
+                        if a1: a1[1].set('')
+                        if a2: a2[1].set('')
+                return callback
+            arg_label, arg_var, arg_widget = arg1
+            ttk.Label(frame, text=arg_label).grid(column=col*2, row=row, sticky='w', padx=(0,2))
+            arg_widget(frame, textvariable=arg_var, width=7).grid(column=col*2+1, row=row, sticky='w', padx=(0,8))
+            frame.grid_columnconfigure(col*2, weight=1)
+            frame.grid_columnconfigure(col*2+1, weight=1)
+            row += 1
+            ttk.Button(frame, text=label,
+                       command=make_cmd_callback()
+                      ).grid(column=col*2, row=row, columnspan=2, pady=4, sticky='ew')
+            row += 1
+        return row
+    # Add volt buttons in left subcolumn (col=0), temp buttons in right subcolumn (col=1)
+    max_rows = max(len(volt_buttons), len(temp_buttons)) * 2  # 2 rows per button
+    add_vertical_buttons(thresholds_frame, volt_buttons, 0, 0)
+    add_vertical_buttons(thresholds_frame, temp_buttons, 1, 0)
+    # Place getconf and gettemp buttons centered at the bottom as two subcolumns (swapped order)
+    thresholds_frame.grid_columnconfigure(0, weight=1)
+    thresholds_frame.grid_columnconfigure(1, weight=1)
+    thresholds_frame.grid_columnconfigure(2, weight=1)
+    thresholds_frame.grid_columnconfigure(3, weight=1)
+    ttk.Button(thresholds_frame, text="Get configuration", command=lambda: send('getconf'))\
+        .grid(column=0, row=max_rows, columnspan=2, pady=8, sticky='ew')
+    ttk.Button(thresholds_frame, text="Get temperature", command=lambda: send('gettemp'))\
+        .grid(column=2, row=max_rows, columnspan=2, pady=8, sticky='ew')
 
     # --- Help button ---
     def show_help():
         help_win = tk.Toplevel(root)
         help_win.title("Help")
-        help_text = tk.Text(help_win, wrap="word", width=80, height=20)
+        help_win.resizable(width=False, height=False)  # Make help window unresizable
+        # Estimate width and height from HELP_CMD_MSG
+        lines = HELP_CMD_MSG.strip().splitlines()
+        max_line_len = max((len(line) for line in lines), default=80)
+        width = min(max_line_len + 4, 120)  # Add padding, cap at 120
+        height = min(len(lines) + 4, 30)    # Add padding, cap at 30
+        help_text = tk.Text(help_win, wrap="none", width=width, height=height)
         help_text.insert("1.0", HELP_CMD_MSG)
         help_text.config(state="disabled")
         help_text.pack(padx=10, pady=10, fill="both", expand=True)
