@@ -6,3 +6,4 @@ test-scheda-digi-09_06.docx
 local/
 received_data.txt
 command_log.txt
+*.csv
