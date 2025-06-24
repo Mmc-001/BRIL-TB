@@ -79,7 +79,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
         except: pass
 
     root = tk.Tk()
-    root.title("TB Cmd Interface")
+    root.title('TB - Cmd Interface')
     root.resizable(width=True, height=False)  # Make window unresizable vertically
 
     # --- Add a framed, centered title label at the top ---
