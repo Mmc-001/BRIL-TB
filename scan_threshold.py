@@ -13,7 +13,7 @@ import threading
 import time
 import datetime
 
-
+DEFAULT_OUTPUT_PATH = "C:\Users\TetraBall!\OneDrive\scan_thr_tetraball"
 
 
 
