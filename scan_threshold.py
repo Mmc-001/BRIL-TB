@@ -14,8 +14,7 @@ import time
 import datetime
 
 DEFAULT_OUTPUT_PATH = "C:\Users\TetraBall!\OneDrive\scan_thr_tetraball"
-
-
+# DEFAULT_OUTPUT_PATH = "."
 
 DEBUG = False
 
@@ -83,7 +82,7 @@ class MainWindow(tk.Tk):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.title('Bril')
+        self.title('TB - Threshold Scan Interface')
         self.resizable(False, False)
         
         self.lblSerialPort = tk.Label(master=self, text='Serial port:', font='sans 10')
@@ -102,7 +101,7 @@ class MainWindow(tk.Tk):
         self.spbBoardID = tk.Spinbox(master=self, from_=0, to=63, width=5, font="sans 10")
         self.spbBoardID.grid(row=0, column=4, columnspan=2, padx=(2, 5), pady=(5, 0), sticky=tk.W)
         
-        self.lblFile = tk.Label(master=self, text="File:", font='sans 10')
+        self.lblFile = tk.Label(master=self, text="Filename (datetime auto-appended):", font='sans 10')
         self.lblFile.grid(row=1, column=0, padx=(5, 2), pady=(5, 0), sticky=tk.E)
         #
         self.txtFile = tk.Entry(master=self, width=50, font='sans 10')
@@ -127,7 +126,7 @@ class MainWindow(tk.Tk):
         self.spbThresholdMax.insert(0, 525)
 
         # Move Scan Threshold button down
-        self.btnLoop = tk.Button(master=self, command=self.start_loop, text='Scan Threshold')
+        self.btnLoop = tk.Button(master=self, command=self.start_loop, text='Start Threshold Scan', font='sans 10')
         self.btnLoop.grid(row=3, column=0, columnspan=6, padx=5, pady=5)
 
         # Threshold step control
@@ -144,7 +143,9 @@ class MainWindow(tk.Tk):
         self.spbBoardID.insert(0, BOARD_DEFAULT_ID)
         #
         self.txtFile.delete(0, tk.END)
-        self.txtFile.insert(0, os.path.dirname(os.path.abspath(__file__))+os.sep+"bril.csv")
+        self.txtFile.insert(0, "thrscan.csv")
+        # Original file path and name handling
+        # self.txtFile.insert(0, os.path.dirname(os.path.abspath(__file__))+os.sep+"bril.csv")
     
     def scan_serialports(self):
         self.cmbSerialPort.set('')
@@ -157,12 +158,46 @@ class MainWindow(tk.Tk):
         if len(serial.tools.list_ports.comports())==1 and len(self.cmbSerialPort['values'])==2:
             self.cmbSerialPort.current(len(self.cmbSerialPort['values'])-1)
     
+    # Original select_path method
+    # def select_path(self):
+        # file_path = filedialog.asksaveasfilename(initialdir=os.path.dirname(self.txtFile.get()), initialfile=os.path.basename(self.txtFile.get()), filetypes=[('File CSV', '*.csv')], defaultextension='.csv', confirmoverwrite=True)
+        # if file_path:
+            # self.txtFile.delete(0, tk.END)
+            # self.txtFile.insert(0, file_path)
+
     def select_path(self):
-        file_path = filedialog.asksaveasfilename(initialdir=os.path.dirname(self.txtFile.get()), initialfile=os.path.basename(self.txtFile.get()), filetypes=[('File CSV', '*.csv')], defaultextension='.csv', confirmoverwrite=True)
+        file_path = filedialog.asksaveasfilename(
+            initialdir=DEFAULT_OUTPUT_PATH,
+            initialfile=os.path.basename(self.txtFile.get()),
+            filetypes=[('File CSV', '*.csv')],
+            defaultextension='.csv',
+            confirmoverwrite=True
+        )
         if file_path:
+            base_filename = os.path.basename(file_path)
             self.txtFile.delete(0, tk.END)
-            self.txtFile.insert(0, file_path)
+            self.txtFile.insert(0, base_filename)
     
+    # Original start_loop method
+    # def start_loop(self):
+        # try:
+            # self.cmbSerialPort.config(state="disabled")
+            # self.btnReScan.config(state="disabled")
+            # self.spbBoardID.config(state="disabled")
+            # self.txtFile.config(state="disabled")
+            # self.btnFile.config(state="disabled")
+            # self.btnLoop.config(state="disabled")
+            #  
+            # self.config(cursor="wait")
+            # self.update()
+            # 
+            # min_threshold = int(self.spbThresholdMin.get())
+            # max_threshold = int(self.spbThresholdMax.get())
+            # step = int(self.spbThresholdStep.get())
+            # 
+            # with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(self.txtFile.get(), "w") as output_file:
+
+
     def start_loop(self):
         try:
             self.cmbSerialPort.config(state="disabled")
@@ -171,16 +206,21 @@ class MainWindow(tk.Tk):
             self.txtFile.config(state="disabled")
             self.btnFile.config(state="disabled")
             self.btnLoop.config(state="disabled")
-            #
+             
             self.config(cursor="wait")
             self.update()
-
+            
             min_threshold = int(self.spbThresholdMin.get())
             max_threshold = int(self.spbThresholdMax.get())
             step = int(self.spbThresholdStep.get())
-            
-            with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(self.txtFile.get(), "w") as output_file:
-                
+
+            # Compose output filename: base + _DDMMYY_HHMMSS.csv in DEFAULT_OUTPUT_PATH
+            base_filename = os.path.splitext(self.txtFile.get())[0]
+            ext = os.path.splitext(self.txtFile.get())[1] or ".csv"
+            timestamp = datetime.datetime.now().strftime("%d%m%y_%Hh%Mm")
+            output_filename = f"{base_filename}_m{min_threshold}_M{max_threshold}_s{step}_{timestamp}{ext}"
+            full_output_path = os.path.join(DEFAULT_OUTPUT_PATH, output_filename)
+            with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(full_output_path, "w") as output_file:
                 time.sleep(1)
                 
                 # imposto data/ora e riavvio la scheda
