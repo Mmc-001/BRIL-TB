@@ -209,6 +209,8 @@ class MainWindow(tk.Tk):
             timestamp = datetime.datetime.now().strftime("%d%m%y_%Hh%Mm")
             output_filename = f"{base_filename}_m{min_threshold}_M{max_threshold}_s{step}_{timestamp}{ext}"
             full_output_path = os.path.join(DEFAULT_OUTPUT_PATH, output_filename)
+
+
             with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(full_output_path, "w") as output_file:
                 time.sleep(1)
                 
@@ -262,15 +264,18 @@ class MainWindow(tk.Tk):
                             if DEBUG: print(">"+line)
                             parts = line.split("\t")
                             if parts:
+                                # scrivi data e ora nel file di output
                                 output_file.write(parts[0]+"\t"+parts[1]+"\t")
+                                # scrivi i valori di cps dei 48 canali
                                 for ch in range(48):
                                     output_file.write(parts[ch+2]+"\t")
                         else:
                             break
-
+                        
+                        # scrivi il valore di soglia nell'ultima colonna
                         output_file.write(str("%.3f" % (mv/1000))+"\n")
                         output_file.flush()
-                        
+
                 if DEBUG: print("*End.")
                 messagebox.showinfo(title=self.title(), message="Completed.")
                 
