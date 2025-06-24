@@ -157,7 +157,7 @@ def listen_for_commands(ser):
     while True:
         try:
             print("\nEnter \"help\" for command list")
-            command = input("[Command] Enter command (format command payload): \n").strip()
+            command = input("[Command] Enter command (format command payload): ").strip()
 
             #check user input
             if len(command) >= 2 and command[0].isalpha():
