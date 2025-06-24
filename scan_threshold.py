@@ -267,12 +267,13 @@ class MainWindow(tk.Tk):
                                     output_file.write(parts[ch+2]+"\t")
                         else:
                             break
-                        #
+
                         output_file.write(str("%.3f" % (mv/1000))+"\n")
                         output_file.flush()
-                    
+                        
                 if DEBUG: print("*End.")
                 messagebox.showinfo(title=self.title(), message="Completed.")
+                
         except serial.SerialException as ex:
             messagebox.showerror(title=self.title(), message="Connection error.")
         except FileNotFoundError as ex:
@@ -289,7 +290,7 @@ class MainWindow(tk.Tk):
             #
             self.config(cursor="")
             self.update()
-            
+
 
 if __name__ == "__main__":
     window = MainWindow()
