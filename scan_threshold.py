@@ -27,9 +27,10 @@ BOARD_DEFAULT_ID = 0
 
 CHANNELS_GROUPS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 
+CMD_TERMINATOR = bytes.fromhex('0a')
+
 def format_command(board=BOARD_MAGIC_ID, cmd=None, payload=None):
     SLAVE_ID = bytes.fromhex(hex(board + BOARD_ID_OFFSET)[2:])
-    CMD_TERMINATOR = bytes.fromhex('0a')
     #
     commands_map = {
         'getstatus'  : lambda p:    SLAVE_ID + bytes([ord("a")]) + CMD_TERMINATOR,
