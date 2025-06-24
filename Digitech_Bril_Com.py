@@ -93,15 +93,15 @@ USER INPUT    OPCODE              Description
     getDAC        f (0x66)	 Get DAC Threshold	
     setDAC        g (0x67)	 Set DAC Threshold	
     getTemp       h (0x68)	 Get Temperature		
-    reset        i (0x69)	 Soft Reset		    
-    setID        j (0x6a)	 Set Board ID		
-    getID        k (0x6b)	 Set Board ID	
-    setoverv     l           Set Over Voltage Threshold
-    setundv      m           Set UnderVoltage Threshold
-    setovert     n           Set Overtemperature Threshold
-    setundt      o           Set Undergemperature Threshold
-    getconf      p           Get Voltage and Temp ThresholdConfiguration    
-    help        (--local)    Print this help message	
+    reset         i (0x69)	 Soft Reset		    
+    setID         j (0x6a)	 Set Board ID		
+    getID         k (0x6b)	 Get Board ID	
+    setoverv      l          Set Over Voltage Threshold
+    setundv       m          Set UnderVoltage Threshold
+    setovert      n          Set Overtemperature Threshold
+    setundt       o          Set Undergemperature Threshold
+    getconf       p          Get Voltage and Temp ThresholdConfiguration    
+    help       (--local)     Print this help message	
 
 
 """
