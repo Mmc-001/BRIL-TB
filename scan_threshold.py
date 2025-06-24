@@ -18,8 +18,6 @@ DEFAULT_OUTPUT_PATH = "C:\Users\TetraBall!\OneDrive\scan_thr_tetraball"
 
 DEBUG = False
 
-
-
 SERIAL_PORT = ''
 BAUD_RATE = 115200
 
@@ -68,15 +66,7 @@ def send_command(serial_port, formatted_command, retry=3, wait=1):
             return True #break
     else:
         return False
-
-
-
-
-
-
-
-
-
+    
 
 class MainWindow(tk.Tk):
     
@@ -197,7 +187,6 @@ class MainWindow(tk.Tk):
             # 
             # with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(self.txtFile.get(), "w") as output_file:
 
-
     def start_loop(self):
         try:
             self.cmbSerialPort.config(state="disabled")
@@ -300,8 +289,7 @@ class MainWindow(tk.Tk):
             #
             self.config(cursor="")
             self.update()
-
-
+            
 
 if __name__ == "__main__":
     window = MainWindow()
