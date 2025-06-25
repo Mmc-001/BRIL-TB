@@ -91,7 +91,7 @@ def read_from_serial(ser):
 
 """
 USER INPUT    OPCODE              Description
-=========================================
+================================================
     getStatus     a (0x61)	 Get Status		    
     getData       b (0x62)	 Get Data		    
     SetDate       c (0x63)	 Set Date		    
@@ -111,30 +111,30 @@ USER INPUT    OPCODE              Description
     start         q          Start Data Acquisition
     stop          r          Stop Data Acquisition
     help       (--local)     Print this help message	
-
-
+====================================================
 """
 
 #function for formatting command
 def format_command(cmd_char, payload):
-    
     command_map = {
-        'getstatus' : lambda p:     BOARD_ID_BYTE+bytes([ord("a")])+CMD_TERMINATOR,
-        'getdata'   : lambda p:     BOARD_ID_BYTE+bytes([ord("b")])+CMD_TERMINATOR,
-        'setdate'   : lambda p:     BOARD_ID_BYTE+bytes([ord("c")])+p+CMD_TERMINATOR,
-        'settime'   : lambda p:     BOARD_ID_BYTE+bytes([ord("d")])+p+CMD_TERMINATOR,
-        'getdatetime':lambda p:     BOARD_ID_BYTE+bytes([ord("e")])+CMD_TERMINATOR,
-        'getdac'    : lambda p:     BOARD_ID_BYTE+bytes([ord("f")])+CMD_TERMINATOR,
-        'setdac'    : lambda p:     BOARD_ID_BYTE+bytes([ord("g")])+p+CMD_TERMINATOR,
-        'gettemp'   : lambda p:     BOARD_ID_BYTE+bytes([ord("h")])+CMD_TERMINATOR,
-        'reset'     : lambda p:     BOARD_ID_BYTE+bytes([ord("i")])+CMD_TERMINATOR,
-        'setid'     : lambda p:     BOARD_ID_BYTE+bytes([ord("j")])+p+CMD_TERMINATOR,
-        'getid'     : lambda p:     BOARD_ID_BYTE+bytes([ord("k")])+CMD_TERMINATOR,
-        'setoverv'  : lambda p:     BOARD_ID_BYTE+bytes([ord("l")])+p+CMD_TERMINATOR,
-        'setundv'   : lambda p:     BOARD_ID_BYTE+bytes([ord("m")])+p+CMD_TERMINATOR,
-        'setovert'  : lambda p:     BOARD_ID_BYTE+bytes([ord("n")])+p+CMD_TERMINATOR,
-        'setundt'   : lambda p:     BOARD_ID_BYTE+bytes([ord("o")])+p+CMD_TERMINATOR,
-        'getconf'   : lambda p:     BOARD_ID_BYTE+bytes([ord("p")])+CMD_TERMINATOR,
+        'getstatus' : lambda p:     BOARD_ID_BYTE + bytes([ord("a")]) +     CMD_TERMINATOR,
+        'getdata'   : lambda p:     BOARD_ID_BYTE + bytes([ord("b")]) +     CMD_TERMINATOR,
+        'setdate'   : lambda p:     BOARD_ID_BYTE + bytes([ord("c")]) + p + CMD_TERMINATOR,
+        'settime'   : lambda p:     BOARD_ID_BYTE + bytes([ord("d")]) + p + CMD_TERMINATOR,
+        'getdatetime':lambda p:     BOARD_ID_BYTE + bytes([ord("e")]) +     CMD_TERMINATOR,
+        'getdac'    : lambda p:     BOARD_ID_BYTE + bytes([ord("f")]) +     CMD_TERMINATOR,
+        'setdac'    : lambda p:     BOARD_ID_BYTE + bytes([ord("g")]) + p + CMD_TERMINATOR,
+        'gettemp'   : lambda p:     BOARD_ID_BYTE + bytes([ord("h")]) +     CMD_TERMINATOR,
+        'reset'     : lambda p:     BOARD_ID_BYTE + bytes([ord("i")]) +     CMD_TERMINATOR,
+        'setid'     : lambda p:     BOARD_ID_BYTE + bytes([ord("j")]) + p + CMD_TERMINATOR,
+        'getid'     : lambda p:     BOARD_ID_BYTE + bytes([ord("k")]) +     CMD_TERMINATOR,
+        'setoverv'  : lambda p:     BOARD_ID_BYTE + bytes([ord("l")]) + p + CMD_TERMINATOR,
+        'setundv'   : lambda p:     BOARD_ID_BYTE + bytes([ord("m")]) + p + CMD_TERMINATOR,
+        'setovert'  : lambda p:     BOARD_ID_BYTE + bytes([ord("n")]) + p + CMD_TERMINATOR,
+        'setundt'   : lambda p:     BOARD_ID_BYTE + bytes([ord("o")]) + p + CMD_TERMINATOR,
+        'getconf'   : lambda p:     BOARD_ID_BYTE + bytes([ord("p")]) +     CMD_TERMINATOR,
+        'start'     : lambda p:     BOARD_ID_BYTE + bytes([ord("q")]) +     CMD_TERMINATOR,
+        'stop'      : lambda p:     BOARD_ID_BYTE + bytes([ord("r")]) +     CMD_TERMINATOR,
     }
     formatter = command_map.get(cmd_char.lower())
     if formatter:
