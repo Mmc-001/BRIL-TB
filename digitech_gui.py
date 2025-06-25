@@ -304,7 +304,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
             return
         help_win = tk.Toplevel(root)
         help_win_ref['window'] = help_win
-        help_win.title("Help")
+        help_win.title("Command Help")
         help_win.resizable(width=False, height=False)  # Make help window unresizable
         # Estimate width and height from HELP_CMD_MSG
         lines = HELP_CMD_MSG.strip().splitlines()
