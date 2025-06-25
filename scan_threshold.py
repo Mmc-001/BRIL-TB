@@ -94,7 +94,7 @@ class MainWindow(tk.Tk):
         self.spbBoardID = tk.Spinbox(master=self, from_=0, to=63, width=5, font="sans 10")
         self.spbBoardID.grid(row=0, column=4, columnspan=2, padx=(2, 5), pady=(5, 0), sticky=tk.W)
         
-        self.lblFile = tk.Label(master=self, text="Filename (datetime auto-appended):", font='sans 10')
+        self.lblFile = tk.Label(master=self, text="Filename: \n(datetime auto-appended)", font='sans 10')
         self.lblFile.grid(row=1, column=0, padx=(5, 2), pady=(5, 0), sticky=tk.E)
         #
         self.txtFile = tk.Entry(master=self, width=50, font='sans 10')
