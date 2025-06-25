@@ -3,25 +3,27 @@ import tkinter as tk
 from tkinter import ttk
 
 HELP_CMD_MSG = """
-USER INPUT    OPCODE              Description
-=========================================
-    getStatus     a (0x61)	 Get Status		    
-    getData       b (0x62)	 Get Data		    
-    SetDate       c (0x63)	 Set Date		    
-    SetTime       d (0x64)	 Set Time		    
-    getDateTime   e (0x65)	 Get Date and Time	
-    getDAC        f (0x66)	 Get DAC Threshold	
-    setDAC        g (0x67)	 Set DAC Threshold	
-    getTemp       h (0x68)	 Get Temperature		
-    reset         i (0x69)	 Soft Reset		    
-    setID         j (0x6a)	 Set Board ID		
-    getID         k (0x6b)	 Get Board ID	
-    setoverv      l          Set Over Voltage Threshold
-    setundv       m          Set Under Voltage Threshold
-    setovert      n          Set Overtemperature Threshold
-    setundt       o          Set Undergemperature Threshold
-    getconf       p          Get Voltage and Temp Threshold Configuration    
-    help        (--local)    Print this help message	
+    USER INPUT    OPCODE          Description
+================================================
+    getStatus     a (0x61)        Get Status		    
+    getData       b (0x62)        Get Data		    
+    SetDate       c (0x63)        Set Date		    
+    SetTime       d (0x64)        Set Time		    
+    getDateTime   e (0x65)        Get Date and Time	
+    getDAC        f (0x66)        Get DAC Threshold	
+    setDAC        g (0x67)        Set DAC Threshold	
+    getTemp       h (0x68)        Get Temperature		
+    reset         i (0x69)        Soft Reset		    
+    setID         j (0x6a)        Set Board ID		
+    getID         k (0x6b)        Get Board ID	
+    setoverv      l               Set Over Voltage Threshold
+    setundv       m               Set Under Voltage Threshold
+    setovert      n               Set Overtemperature Threshold
+    setundt       o               Set Undergemperature Threshold
+    getconf       p               Get Voltage and Temp Threshold Configuration    
+    start         q               Start Data Acquisition
+    stop          r               Stop Data Acquisition
+    help        (--local)         Print this help message	
 """
 
 def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
@@ -29,7 +31,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
 
     def send(cmd, arg1=None, arg2=None):
         try:
-            if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf'}:
+            if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf','start','stop'}:
                 formatted = format_command(cmd, 0)
             elif cmd == 'settime':
                 payload = datetime.datetime.now().strftime("%H%M%S").encode("ascii")
