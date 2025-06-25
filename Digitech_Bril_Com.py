@@ -18,6 +18,10 @@ CTRL_LOG_FILE = 'command_log.txt'
 
 PERIODIC_TRIGGER_PERIOD = 20        #seconds
 
+# Semaphore to control access to the serial port
+# This is used to prevent multiple threads from writing to the serial port at the same time
+semaphore = threading.Semaphore(1)
+
 
 BOARD_ID_OFFSET = 33
 BOARD__MAGIC_ID = 100 -BOARD_ID_OFFSET #a message with BOARD MAGIC ID is processed by the board wathever its actual id
@@ -68,6 +72,8 @@ def read_from_serial(ser):
     
     with open(OUTPUT_FILE, 'a') as file, open(CTRL_LOG_FILE,'a') as ctrl_file:
         while True:
+            # Acquire the semaphore to ensure only one thread accesses the serial port at a time
+            semaphore.acquire()
             if ser.in_waiting:
                 line = ser.readline().decode('utf-8', errors='ignore').strip()
                 if line:
@@ -79,7 +85,8 @@ def read_from_serial(ser):
                     else:               #data line
                         file.write(cur_time+"\t"+line + '\n')
                         file.flush()
-
+            # Release the semaphore to allow other threads to access the serial port
+            semaphore.release()
             time.sleep(0.1)
 
 """
@@ -101,6 +108,8 @@ USER INPUT    OPCODE              Description
     setovert      n          Set Overtemperature Threshold
     setundt       o          Set Undergemperature Threshold
     getconf       p          Get Voltage and Temp ThresholdConfiguration    
+    start         q          Start Data Acquisition
+    stop          r          Stop Data Acquisition
     help       (--local)     Print this help message	
 
 
@@ -144,7 +153,9 @@ def periodic_trigger_msg(ser,period):
         try:
             formatted = format_command('getdata',0)
             if (formatted):
+                semaphore.acquire()
                 ser.write(formatted)
+                semaphore.release()
         except:
             print("Error Periodic trigger")
         time.sleep(PERIODIC_TRIGGER_PERIOD)
@@ -163,11 +174,13 @@ def listen_for_commands(ser):
             if len(command) >= 2 and command[0].isalpha():
                 cmd = command.split()[0].lower()
 
-                # GET ID
+                # GET STATUS
                 if cmd == 'getstatus':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                          print(f"[Error] Invalid command ({cmd}). Example: getstatus")
@@ -176,7 +189,9 @@ def listen_for_commands(ser):
                 elif cmd == 'getdata':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: getdata")
@@ -185,7 +200,9 @@ def listen_for_commands(ser):
                 if cmd == 'getdatetime':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: getdatetime")
@@ -197,7 +214,9 @@ def listen_for_commands(ser):
                     payload = bytes(payload,"ascii")
                     formatted = format_command(cmd,payload)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: settime")
@@ -209,7 +228,9 @@ def listen_for_commands(ser):
                     payload = bytes(payload,"ascii")
                     formatted = format_command(cmd,payload)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: setdate")
@@ -234,7 +255,9 @@ def listen_for_commands(ser):
                         payload = payload + bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
+                            semaphore.acquire()
                             ser.write(formatted)
+                            semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")
@@ -247,7 +270,9 @@ def listen_for_commands(ser):
                 if cmd == 'getdac':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: getdac")
@@ -256,7 +281,9 @@ def listen_for_commands(ser):
                 if cmd == 'gettemp':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: getdac")
@@ -265,7 +292,9 @@ def listen_for_commands(ser):
                 elif cmd == 'reset':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                         print(f"[Error] Invalid command ({cmd}). Example: reset")
@@ -281,7 +310,9 @@ def listen_for_commands(ser):
                             payload = chr(num).encode('ASCII')
                             formatted = format_command(cmd,payload)
                             if formatted:
+                                semaphore.acquire()
                                 ser.write(formatted)
+                                semaphore.release()
                                 print(f"[Sent] {formatted}")
                         else:
                             print(f"[Error] Maximum id = 63 ({cmd}). Example: setid 23")
@@ -292,7 +323,9 @@ def listen_for_commands(ser):
                 elif cmd == 'getid':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                          print(f"[Error] Invalid command ({cmd}). Example: getid")
@@ -311,16 +344,18 @@ def listen_for_commands(ser):
                         payload =  bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
+                            semaphore.acquire()
                             ser.write(formatted)
+                            semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
-                            print(f"[Error] Invalid command ({cmd}). Example: setdac")
+                            print(f"[Error] Invalid command ({cmd}). Example: setoverv 16.5")
 
                     except:
                         print('Error in conversion')
                 
 
-                #SET OVERV
+                #SET UNDERV
                 elif cmd == 'setundv':
                     try:
                         undv_str = command.split()[1].lower()
@@ -334,7 +369,9 @@ def listen_for_commands(ser):
                         payload =  bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
+                            semaphore.acquire()
                             ser.write(formatted)
+                            semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setdac")
@@ -342,7 +379,7 @@ def listen_for_commands(ser):
                     except:
                         print('Error in conversion')
 
-                #SET OVERV
+                #SET OVERT
                 elif cmd == 'setovert':
                     try:
                         overt_str = command.split()[1].lower()
@@ -359,7 +396,9 @@ def listen_for_commands(ser):
                         payload =  bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
+                            semaphore.acquire()
                             ser.write(formatted)
+                            semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setovert 50.5")
@@ -384,7 +423,9 @@ def listen_for_commands(ser):
                         payload =  bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
+                            semaphore.acquire()
                             ser.write(formatted)
+                            semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setundt -5.5")
@@ -396,10 +437,34 @@ def listen_for_commands(ser):
                 elif cmd == 'getconf':
                     formatted = format_command(cmd,0)
                     if formatted:
+                        semaphore.acquire()
                         ser.write(formatted)
+                        semaphore.release()
                         print(f"[Sent] {formatted}")
                     else:
                          print(f"[Error] Invalid command ({cmd}). Example: getconf")
+                    
+                # START COUNT
+                elif cmd == 'start':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: start")
+
+                # STOP COUNT
+                elif cmd == 'stop':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: stop")
                 
 
                 elif cmd == 'help':

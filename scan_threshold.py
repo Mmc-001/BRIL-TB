@@ -213,20 +213,22 @@ class MainWindow(tk.Tk):
 
 
             with serial.Serial(self.cmbSerialPort.get(), BAUD_RATE, timeout=1) as serial_port, open(full_output_path, "w") as output_file:
-                time.sleep(1)
+                time.sleep(2)
                 
                 # imposto data/ora e riavvio la scheda
-                if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setDate", datetime.datetime.now().strftime("%d%m%Y"))):
+                if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setDate", datetime.datetime.now().strftime("%d%m%Y")), wait=1):
                     raise RuntimeError("Communication error.")
-                if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setTime", datetime.datetime.now().strftime("%H%M%S"))):
+                time.sleep(1)
+                if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setTime", datetime.datetime.now().strftime("%H%M%S")), wait=1):
                     raise RuntimeError("Communication error.'")
+                time.sleep(1)
                 if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "reset")):
                     raise RuntimeError("Communication error.")
-                #
+                time.sleep(5)
+                
+                
                 serial_port.reset_input_buffer()
                 serial_port.reset_output_buffer()
-                
-                time.sleep(5)
                 
                 # preparo il file
                 output_file.write("DATE\tTIME\t")
@@ -240,6 +242,10 @@ class MainWindow(tk.Tk):
                         if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "setDAC", grp+str(mv).rjust(4, "0"))):
                             raise RuntimeError("Communication error.")
                     
+                    #Avvio Conteggio
+                    if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "start")):
+                        raise RuntimeError("Communication error.")
+
                     # pulisco eventuali dati vecchi
                     if DEBUG: print("*Cleaning buffer...")
                     serial_port.write( format_command(int(self.spbBoardID.get()), "getData") )
@@ -277,6 +283,9 @@ class MainWindow(tk.Tk):
                         output_file.write(str("%.3f" % (mv/1000))+"\n")
                         output_file.flush()
 
+                    #fermo conteggio
+                    if not send_command(serial_port, format_command(int(self.spbBoardID.get()), "stop")):
+                        raise RuntimeError("Communication error.")
                 if DEBUG: print("*End.")
                 messagebox.showinfo(title=self.title(), message="Completed.")
                 
