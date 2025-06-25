@@ -49,8 +49,8 @@ def format_command(board=BOARD_MAGIC_ID, cmd=None, payload=None):
         'setovert'   : lambda p:    SLAVE_ID + bytes([ord("n")]) + bytes(p, "ascii") + CMD_TERMINATOR,
         'setundt'    : lambda p:    SLAVE_ID + bytes([ord("o")]) + bytes(p, "ascii") + CMD_TERMINATOR,
         'getconf'    : lambda p:    SLAVE_ID + bytes([ord("p")]) + CMD_TERMINATOR,
-        'start'      : lambda p:    CMD_TERMINATOR + SLAVE_ID +bytes([ord("q")])+CMD_TERMINATOR,
-        'stop'       : lambda p:    CMD_TERMINATOR + SLAVE_ID +bytes([ord("r")])+CMD_TERMINATOR,
+        'start'      : lambda p:    SLAVE_ID + bytes([ord("q")]) + CMD_TERMINATOR,
+        'stop'       : lambda p:    SLAVE_ID + bytes([ord("r")]) + CMD_TERMINATOR,
     }
     formatter = commands_map.get(cmd.lower())
     if formatter:
