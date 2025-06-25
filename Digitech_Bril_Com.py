@@ -1,12 +1,9 @@
-
 import serial
 import threading
 import time
 import datetime
 import digitech_gui
-#import digitech_gui_v2
-
-
+from digitech_gui import HELP_CMD_MSG
 
 # Configure serial port
 SERIAL_PORT = 'COM6'#Change to your port, e.g., '/dev/ttyUSB0' on Linux
@@ -22,12 +19,10 @@ PERIODIC_TRIGGER_PERIOD = 20        #seconds
 # This is used to prevent multiple threads from writing to the serial port at the same time
 semaphore = threading.Semaphore(1)
 
-
 BOARD_ID_OFFSET = 33
 BOARD__MAGIC_ID = 100 -BOARD_ID_OFFSET #a message with BOARD MAGIC ID is processed by the board wathever its actual id
 BOARD_DEFAULT_ID = 0 # 
 BOARD_ID = BOARD_DEFAULT_ID
-
 
 BOARD_ID_BYTE = bytes.fromhex(hex(BOARD_ID + BOARD_ID_OFFSET)[2:])
 CMD_TERMINATOR = bytes.fromhex('0a')
@@ -35,24 +30,21 @@ CMD_TERMINATOR = bytes.fromhex('0a')
 DAC_REF_VOLTAGE = 3
 DAC_MAX_N = 1023
 
-
-
-HELP_CMD_MSG = """
-USER INPUT       \t     Description	        Arguments     \n
-========================================================= \n
-    getStatus    \t		Get Status		         --       \n
-    getData      \t		Get Data		         --       \n
-    SetDate      \t		Set Date		         --       \n
-    SetTime      \t		Set Time		         --       \n
-    getDateTime  \t		Get Date and Time	     --       \n
-    getDAC       \t		Get DAC Threshold	     --       \n
-    setDAC       \t		Set DAC Threshold	CHID thr_V    \n
-    getID        \t		Get Board ID		              \n
-    setID        \t		Set Board ID		   newID      \n
-    getTemp      \t		Get Temperature		\n
-    reset        \t		Soft Reset		   \n
-"""
-
+# HELP_CMD_MSG = """
+# USER INPUT       \t     Description	        Arguments     \n
+# ========================================================= \n
+    # getStatus    \t		Get Status		         --       \n
+    # getData      \t		Get Data		         --       \n
+    # SetDate      \t		Set Date		         --       \n
+    # SetTime      \t		Set Time		         --       \n
+    # getDateTime  \t		Get Date and Time	     --       \n
+    # getDAC       \t		Get DAC Threshold	     --       \n
+    # setDAC       \t		Set DAC Threshold	CHID thr_V    \n
+    # getID        \t		Get Board ID		              \n
+    # setID        \t		Set Board ID		   newID      \n
+    # getTemp      \t		Get Temperature		\n
+    # reset        \t		Soft Reset		   \n
+# """
 
 DAC_CHANNELS_ID = {
         'a' : bytes([ord("a")]),
@@ -65,11 +57,8 @@ DAC_CHANNELS_ID = {
         'h' : bytes([ord("h")])
         }
 
-
-
 #Thread for serial read and log
 def read_from_serial(ser):
-    
     with open(OUTPUT_FILE, 'a') as file, open(CTRL_LOG_FILE,'a') as ctrl_file:
         while True:
             # Acquire the semaphore to ensure only one thread accesses the serial port at a time
@@ -142,8 +131,6 @@ def format_command(cmd_char, payload):
     else:
         return None
 
-
-
 #thread for periodically triggering data messages
 def periodic_trigger_msg(ser,period):
     print("Start collecting data in 10s")
@@ -159,9 +146,6 @@ def periodic_trigger_msg(ser,period):
         except:
             print("Error Periodic trigger")
         time.sleep(PERIODIC_TRIGGER_PERIOD)
-
-
-
 
 #Thread for listen user inputs and send commands to board
 def listen_for_commands(ser):
@@ -466,7 +450,6 @@ def listen_for_commands(ser):
                     else:
                          print(f"[Error] Invalid command ({cmd}). Example: stop")
                 
-
                 elif cmd == 'help':
                     print(HELP_CMD_MSG)
 
