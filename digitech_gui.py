@@ -3,27 +3,27 @@ import tkinter as tk
 from tkinter import ttk
 
 HELP_CMD_MSG = """
-    USER INPUT    OPCODE          Description
-================================================
-    getStatus     a (0x61)        Get Status		    
-    getData       b (0x62)        Get Data		    
-    SetDate       c (0x63)        Set Date		    
-    SetTime       d (0x64)        Set Time		    
-    getDateTime   e (0x65)        Get Date and Time	
-    getDAC        f (0x66)        Get DAC Threshold	
-    setDAC        g (0x67)        Set DAC Threshold	
-    getTemp       h (0x68)        Get Temperature		
-    reset         i (0x69)        Soft Reset		    
-    setID         j (0x6a)        Set Board ID		
-    getID         k (0x6b)        Get Board ID	
-    setoverv      l               Set Over Voltage Threshold
-    setundv       m               Set Under Voltage Threshold
-    setovert      n               Set Overtemperature Threshold
-    setundt       o               Set Undergemperature Threshold
-    getconf       p               Get Voltage and Temp Threshold Configuration    
-    start         q               Start Data Acquisition
-    stop          r               Stop Data Acquisition
-    help        (--local)         Print this help message	
+    USER INPUT   \t     OPCODE      \t      Description                     \t      Arguments
+    =========================================================================================================
+    getStatus    \t     a (0x61)    \t      Get Status                      \t      
+    getData      \t     b (0x62)    \t      Get Data                        \t      
+    SetDate      \t     c (0x63)    \t      Set Date                        \t      [args]
+    SetTime      \t     d (0x64)    \t      Set Time                        \t      [args]
+    getDateTime  \t     e (0x65)    \t      Get Date and Time               \t      
+    getDAC       \t     f (0x66)    \t      Get DAC Threshold               \t      
+    setDAC       \t     g (0x67)    \t      Set DAC Threshold               \t      [CHID thr_V]
+    getTemp      \t     h (0x68)    \t      Get Temperature                 \t      
+    reset        \t     i (0x69)    \t      Soft Reset                      \t      
+    setID        \t     j (0x6a)    \t      Set Board ID                    \t      [newID]
+    getID        \t     k (0x6b)    \t      Get Board ID                    \t      
+    setoverv     \t     l (0x6c)    \t      Set Over Voltage Thr            \t      [thr_V]
+    setundv      \t     m (0x6d)    \t      Set Under Voltage Thr           \t      [thr_V]
+    setovert     \t     n (0x6e)    \t      Set Overtemperature Thr         \t      [thr_T]
+    setundt      \t     o (0x6f)    \t      Set Undertemperature Thr        \t      [thr_T]
+    getconf      \t     p (0x70)    \t      Get Volt and Temp Thr Config    \t      
+    start        \t     q (0x71)    \t      Start Data Acquisition          \t      
+    stop         \t     r (0x72)    \t      Stop Data Acquisition           \t      
+    help         \t     (--local)   \t      Print this help message         \t      
 """
 
 def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
