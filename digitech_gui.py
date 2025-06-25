@@ -82,7 +82,7 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
 
     root = tk.Tk()
     root.title('TB - Cmd Interface')
-    root.resizable(width=True, height=False)  # Make window unresizable vertically
+    root.resizable(width=False, height=False)  # Make window unresizable vertically
 
     # --- Add a framed, centered title label at the top ---
     title_font = ("Consolas", 18, "bold")  # Try Consolas first
@@ -110,22 +110,43 @@ def start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     title_label.pack(fill="both", expand=True, padx=10, pady=5)
     # ---------------------------------------------
 
+    # --- Data Acquisition Control Frame (below title, above others) ---
+    daq_frame = ttk.LabelFrame(root, text="Data Acquisition Control", padding=10)
+    daq_frame.grid(row=1, column=0, columnspan=2, sticky='ew', padx=10, pady=(0, 10))
+    # Make the frame expand across both columns
+    root.grid_rowconfigure(1, weight=0)
+    # Create larger font for DAQ buttons
+    daq_btn_font = (title_font[0], int(title_font[1]*1.5), "bold") if isinstance(title_font, tuple) else ("TkDefaultFont", 18, "bold")
+    # Start and Stop buttons, horizontally arranged
+    daq_start_btn = ttk.Button(daq_frame, text="Start Acquisition", command=lambda: send('start'))
+    daq_stop_btn = ttk.Button(daq_frame, text="Stop Acquisition", command=lambda: send('stop'))
+    # Apply larger font
+    try:
+        daq_start_btn.config(font=daq_btn_font)
+        daq_stop_btn.config(font=daq_btn_font)
+    except Exception:
+        pass
+    daq_start_btn.grid(row=0, column=0, padx=10, pady=8, sticky='ew')
+    daq_stop_btn.grid(row=0, column=1, padx=10, pady=8, sticky='ew')
+    daq_frame.grid_columnconfigure(0, weight=1)
+    daq_frame.grid_columnconfigure(1, weight=1)
+
     # --- Frames for logical grouping ---
     # New layout with all frames expanding to the same width (sticky='ew')
     board_frame = ttk.LabelFrame(root, text="Board Control", padding=10)
-    board_frame.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
+    board_frame.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
     datetime_frame = ttk.LabelFrame(root, text="Date & Time", padding=10)
-    datetime_frame.grid(row=1, column=1, sticky='ew', padx=5, pady=5)
+    datetime_frame.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
     dac_frame = ttk.LabelFrame(root, text="DAC Control", padding=10)
-    dac_frame.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
+    dac_frame.grid(row=3, column=0, sticky='ew', padx=5, pady=5)
     id_frame = ttk.LabelFrame(root, text="Board ID", padding=10)
-    id_frame.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
+    id_frame.grid(row=3, column=1, sticky='ew', padx=5, pady=5)
     # Combine Voltage and Temperature Thresholds into a single frame with two subcolumns
     thresholds_frame = ttk.LabelFrame(root, text="Voltage & Temperature Thresholds", padding=10)
-    thresholds_frame.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
+    thresholds_frame.grid(row=4, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
     help_frame = ttk.LabelFrame(root, text="Help", padding=10)
-    help_frame.grid(row=4, column=0, columnspan=2, sticky='ew', padx=5, pady=10)
-    # Make columns expand equally
+    help_frame.grid(row=5, column=0, columnspan=2, sticky='ew', padx=5, pady=10)
+    # Update column configs for new row indices
     root.grid_columnconfigure(0, weight=1)
     root.grid_columnconfigure(1, weight=1)
 
