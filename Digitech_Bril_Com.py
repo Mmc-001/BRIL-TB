@@ -492,7 +492,7 @@ def main():
             threading.Thread(target=periodic_trigger_msg, args=(ser,trigger_period), daemon=True).start()
             threading.Thread(target=listen_for_commands, args=(ser,), daemon=True).start()
             # Start the GUI
-            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID)
+            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE=CTRL_LOG_FILE)
     except serial.SerialException as e:
         print(f"Serial error: {e}")
     except KeyboardInterrupt:
