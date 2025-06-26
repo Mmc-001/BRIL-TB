@@ -1,4 +1,5 @@
 __pycache__/
+*.bat
 .vscode/
 schemi-scheda/
 scan_threshold/
