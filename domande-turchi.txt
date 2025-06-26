@@ -1,4 +1,3 @@
-Punti da chiedere a Turchi:
 Alta priorità:
 - nel received_data.txt compare ogni tanto "================== \n USART Initialized!" (due delle linee di output del comando reset), può essere spostato nel command_log.txt e non nel received_data.txt? Se sì a livello di python, come?
 - gettemp ritorna due temperature (micro e sonda), differiscono di sei gradi (uController più bassa), è atteso?
