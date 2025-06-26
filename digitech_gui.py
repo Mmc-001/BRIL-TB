@@ -88,12 +88,21 @@ def add_buttons(frame, buttons, send_func, dac_frame=None, DAC_CHANNELS_ID=None,
                 send_func(c,
                           a1[1].get() if a1 else None,
                           a2[1].get() if a2 else None)
-                if c in {'setdac', 'setoverv', 'setundv', 'setovert', 'setundt', 'setid'}:
-                    if c == 'setdac':
-                        if a2: a2[1].set('')
-                    else:
-                        if a1: a1[1].set('')
-                        if a2: a2[1].set('')
+                # if c in {
+                    # 'setdac',
+                    # 'setoverv',
+                    # 'setundv',
+                    # 'setovert',
+                    # 'setundt',
+                    # 'setid'}:
+                    # if c == 'setdac':
+                        # if a2: a2[1].set('')
+                    # else:
+                        # if a1: a1[1].set('')
+                        # if a2: a2[1].set('')
+                if c in {'setoverv', 'setundv', 'setovert', 'setundt', 'setid'}:
+                    if a1: a1[1].set('')
+                    if a2: a2[1].set('')
             return callback
         if vertical and arg1 and not arg2:
             arg_label, arg_var, arg_widget = arg1
@@ -278,10 +287,12 @@ def start_gui(serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     max_rows = max(len(volt_buttons), len(temp_buttons)) * 2
     add_buttons(thresholds_frame, volt_buttons, send_func, vertical=True, col=0, start_row=0)
     add_buttons(thresholds_frame, temp_buttons, send_func, vertical=True, col=1, start_row=0)
-    thresholds_frame.grid_columnconfigure(0, weight=1)
-    thresholds_frame.grid_columnconfigure(1, weight=1)
-    thresholds_frame.grid_columnconfigure(2, weight=1)
-    thresholds_frame.grid_columnconfigure(3, weight=1)
+    # thresholds_frame.grid_columnconfigure(0, weight=1)
+    # thresholds_frame.grid_columnconfigure(1, weight=1)
+    # thresholds_frame.grid_columnconfigure(2, weight=1)
+    # thresholds_frame.grid_columnconfigure(3, weight=1)
+    for c in range(4):
+        thresholds_frame.grid_columnconfigure(c, weight=1)
     ttk.Button(thresholds_frame, text="Get configuration", command=lambda: send('getconf', None, None, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID))\
         .grid(column=0, row=max_rows, columnspan=2, pady=8, sticky='ew')
     ttk.Button(thresholds_frame, text="Get temperature", command=lambda: send('gettemp', None, None, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID))\
