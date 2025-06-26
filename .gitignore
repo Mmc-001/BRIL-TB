@@ -1,4 +1,5 @@
 __pycache__/
+.vscode/
 schemi-scheda/
 scan_threshold/
 .DS_Store
