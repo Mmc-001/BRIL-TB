@@ -1,7 +1,13 @@
 Punti da chiedere a Turchi:
-- gettemp ritorna due temperature (micro e sonda), differiscono di sei gradi, è atteso?
-- gettemp ritorna temperatura, voltaggio, uCtemperatura, come possiamo separare le info in 2 o addirittura 3?
-- setdac chn valore non viene scritto nel log, come fare a scriverlo?
-- il messaggio no acquisizione viene scritto ogni PERIOD, come fare a rallentarlo per non riempire il command_log file?
-- quando si scrive un comando e nello stesso momento parte uno "sparo" di getdata l'output si sovrappone e va cancellato il comando (che però rimane invisibile) altrimenti se lo si riscrive il "pezzo" di comando prima e quello dopo si sommano e tale comando non viene accettato
-- nel received_data.txt compare ogni tanto ==================USART INITIALISED (possibile output del comando reset), può essere spostato nel command log?
+Alta priorità:
+- nel received_data.txt compare ogni tanto "================== \n USART Initialized!" (due delle linee di output del comando reset), può essere spostato nel command log? Se sì a livello di python, come?
+- gettemp ritorna due temperature (micro e sonda), differiscono di sei gradi (uController più bassa), è atteso?
+- gettemp ritorna temperatura sonda, voltaggio, temperatura uController, come possiamo separare le info in 2 (temperature/tensione) o addirittura 3?
+- le soglie di temperatura (undert e overt) per il bit di stato a quale temperatura si riferiscono? Sonda o uController?
+- setdac chn valore non viene scritto nel log (solo ">ACK set DAC"), come fare a scriverlo (eventualmente anche gli altri comandi set)?
+
+Bassa priorità:
+- come funziona esattamente il threading.Semaphore?
+
+- il messaggio "Data req with Count Deactivated!" viene scritto ogni PERIODIC_TRIGGER_PERIOD, come fare a rallentarlo per non riempire il file command_log.txt quando la scheda è attiva e in comunicazione ma senza acquisire?
+- quando si scrive un comando e nello stesso momento parte uno "sparo" di getdata l'output si sovrappone e va cancellato il comando (che però rimane invisibile) altrimenti se lo si riscrive il "pezzo" di comando prima e quello dopo si sommano e tale comando non viene accettato, è risolvibile a livello di python?
