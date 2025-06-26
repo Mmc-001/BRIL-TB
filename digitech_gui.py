@@ -80,8 +80,8 @@ def send(cmd, arg1, arg2, serial_port, format_command, DAC_CHANNELS_ID, BOARD__M
 def channel_dropdown(var, dac_frame, DAC_CHANNELS_ID):
     return ttk.OptionMenu(dac_frame, var, 'a', *DAC_CHANNELS_ID.keys())
 
-def add_buttons(frame, buttons, send_func, dac_frame=None, DAC_CHANNELS_ID=None):
-    row = 0
+def add_buttons(frame, buttons, send_func, dac_frame=None, DAC_CHANNELS_ID=None, vertical=False, col=0, start_row=0):
+    row = start_row
     for label, cmd, arg1, arg2 in buttons:
         def make_cmd_callback(c=cmd, a1=arg1, a2=arg2):
             def callback():
@@ -95,7 +95,18 @@ def add_buttons(frame, buttons, send_func, dac_frame=None, DAC_CHANNELS_ID=None)
                         if a1: a1[1].set('')
                         if a2: a2[1].set('')
             return callback
-        if cmd == 'setdac':
+        if vertical and arg1 and not arg2:
+            arg_label, arg_var, arg_widget = arg1
+            ttk.Label(frame, text=arg_label).grid(column=col*2, row=row, sticky='ew', padx=(0,2))
+            arg_widget(frame, textvariable=arg_var, width=7).grid(column=col*2+1, row=row, sticky='ew', padx=(0,8))
+            frame.grid_columnconfigure(col*2, weight=1)
+            frame.grid_columnconfigure(col*2+1, weight=1)
+            row += 1
+            ttk.Button(frame, text=label,
+                       command=make_cmd_callback()
+                      ).grid(column=col*2, row=row, columnspan=2, pady=4, sticky='ew')
+            row += 1
+        elif cmd == 'setdac':
             arg_label1, arg_var1, arg_widget1 = arg1
             arg_label2, arg_var2, arg_widget2 = arg2
             ttk.Label(frame, text=arg_label1).grid(column=0, row=row, sticky='ew', padx=(0,2))
@@ -148,29 +159,6 @@ def add_buttons(frame, buttons, send_func, dac_frame=None, DAC_CHANNELS_ID=None)
                        command=make_cmd_callback()
                       ).grid(column=0, row=row, pady=4, sticky='ew')
             row += 1
-
-def add_vertical_buttons(frame, buttons, col, start_row, send_func):
-    row = start_row
-    for label, cmd, arg1, arg2 in buttons:
-        def make_cmd_callback(c=cmd, a1=arg1, a2=arg2):
-            def callback():
-                send_func(c,
-                          a1[1].get() if a1 else None,
-                          a2[1].get() if a2 else None)
-                if c in {'setoverv', 'setundv', 'setovert', 'setundt'}:
-                    if a1: a1[1].set('')
-                    if a2: a2[1].set('')
-            return callback
-        arg_label, arg_var, arg_widget = arg1
-        ttk.Label(frame, text=arg_label).grid(column=col*2, row=row, sticky='ew', padx=(0,2))
-        arg_widget(frame, textvariable=arg_var, width=7).grid(column=col*2+1, row=row, sticky='ew', padx=(0,8))
-        frame.grid_columnconfigure(col*2, weight=1)
-        frame.grid_columnconfigure(col*2+1, weight=1)
-        row += 1
-        ttk.Button(frame, text=label,
-                   command=make_cmd_callback()
-                  ).grid(column=col*2, row=row, columnspan=2, pady=4, sticky='ew')
-        row += 1
     return row
 
 def show_help(root):
@@ -288,8 +276,8 @@ def start_gui(serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID):
     add_buttons(dac_frame, dac_buttons, send_func, dac_frame, DAC_CHANNELS_ID)
     add_buttons(id_frame, id_buttons, send_func)
     max_rows = max(len(volt_buttons), len(temp_buttons)) * 2
-    add_vertical_buttons(thresholds_frame, volt_buttons, 0, 0, send_func)
-    add_vertical_buttons(thresholds_frame, temp_buttons, 1, 0, send_func)
+    add_buttons(thresholds_frame, volt_buttons, send_func, vertical=True, col=0, start_row=0)
+    add_buttons(thresholds_frame, temp_buttons, send_func, vertical=True, col=1, start_row=0)
     thresholds_frame.grid_columnconfigure(0, weight=1)
     thresholds_frame.grid_columnconfigure(1, weight=1)
     thresholds_frame.grid_columnconfigure(2, weight=1)
