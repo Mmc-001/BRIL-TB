@@ -149,318 +149,318 @@ def periodic_trigger_msg(ser,period):
 
 #Thread for listen user inputs and send commands to board
 def listen_for_commands(ser):
-    with open(CTRL_LOG_FILE, 'a') as ctrl_file:
-        while True:
-            try:
-                print("\nEnter \"help\" for command list")
-                command = input("[Command] Enter command (format command payload): ").strip()
+    while True:
+        try:
+            print("\nEnter \"help\" for command list")
+            command = input("[Command] Enter command (format command payload): ").strip()
 
-                #check user input
-                if len(command) >= 2 and command[0].isalpha():
-                    cmd = command.split()[0].lower()
+            #check user input
+            if len(command) >= 2 and command[0].isalpha():
+                cmd = command.split()[0].lower()
 
-                    # GET STATUS
-                    if cmd == 'getstatus':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                             print(f"[Error] Invalid command ({cmd}). Example: getstatus")
+                # GET STATUS
+                if cmd == 'getstatus':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: getstatus")
 
-                    #GET DATA
-                    elif cmd == 'getdata':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: getdata")
+                #GET DATA
+                elif cmd == 'getdata':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: getdata")
 
-                    #GET DATE AND TIME
-                    if cmd == 'getdatetime':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: getdatetime")
+                #GET DATE AND TIME
+                if cmd == 'getdatetime':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: getdatetime")
+                
+                #SET TIME
+                elif cmd == 'settime':
+                    date = datetime.datetime.now()
+                    payload = date.strftime("%H%M%S")
+                    payload = bytes(payload,"ascii")
+                    formatted = format_command(cmd,payload)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: settime")
+                
+                #SET DATE
+                elif cmd == 'setdate':
+                    date = datetime.datetime.now()
+                    payload = date.strftime("%d%m%Y")
+                    payload = bytes(payload,"ascii")
+                    formatted = format_command(cmd,payload)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: setdate")
 
-                    #SET TIME
-                    elif cmd == 'settime':
-                        date = datetime.datetime.now()
-                        payload = date.strftime("%H%M%S")
-                        payload = bytes(payload,"ascii")
+                #SET DAC THR
+                if cmd == 'setdac':
+                    try:
+                        dac_channel_str = command.split()[1].lower()
+                        #get desired DAC channel from command ("a","b",..."h")
+                        payload = DAC_CHANNELS_ID.get(dac_channel_str)
+                        #get desired Voltage value in V
+                        thr_v = float(command.split()[2])
+                        #convert desired Voltage value to mV
+                        thr_n = int(thr_v*1000)
+                        # get the corresponding ascii string
+                        thr_k = int(thr_n/1000)
+                        thr_h = int((thr_n%1000)/100)
+                        thr_d = int((thr_n%100)/10)
+                        thr_u = int((thr_n%10))
+                        thr_str = str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
+                        #get the final command string 
+                        payload = payload + bytes(thr_str,"ascii")
                         formatted = format_command(cmd,payload)
                         if formatted:
                             semaphore.acquire()
                             ser.write(formatted)
                             semaphore.release()
                             print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: settime")
-
-                    #SET DATE
-                    elif cmd == 'setdate':
-                        date = datetime.datetime.now()
-                        payload = date.strftime("%d%m%Y")
-                        payload = bytes(payload,"ascii")
-                        formatted = format_command(cmd,payload)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: setdate")
-
-                    #SET DAC THR
-                    if cmd == 'setdac':
-                        try:
-                            dac_channel_str = command.split()[1].lower()
-                            #get desired DAC channel from command ("a","b",..."h")
-                            payload = DAC_CHANNELS_ID.get(dac_channel_str)
-                            #get desired Voltage value in V
-                            thr_v = float(command.split()[2])
-                            #convert desired Voltage value to mV
-                            thr_n = int(thr_v*1000)
-                            # get the corresponding ascii string
-                            thr_k = int(thr_n/1000)
-                            thr_h = int((thr_n%1000)/100)
-                            thr_d = int((thr_n%100)/10)
-                            thr_u = int((thr_n%10))
-                            thr_str = str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
-                            #get the final command string 
-                            payload = payload + bytes(thr_str,"ascii")
-                            formatted = format_command(cmd,payload)
-                            if formatted:
-                                semaphore.acquire()
-                                ser.write(formatted)
-                                semaphore.release()
-                                print(f"[Sent] {formatted}")
-                                ctrl_file.write(f"Set DAC {dac_channel_str} to {thr_v} V\n")
+                            with open(CTRL_LOG_FILE, 'a') as ctrl_file:
+                                cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                ctrl_file.write(f"{cur_time}\t Set DAC: CHN={dac_channel_str}, THR={thr_v}V\n")
                                 ctrl_file.flush()
-                            else:
-                                print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")
-
-                        except:
-                            print('Error in conversion')
-
-
-                    #GET DAC THR
-                    if cmd == 'getdac':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
                         else:
-                            print(f"[Error] Invalid command ({cmd}). Example: getdac")
+                            print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")
+                    except:
+                        print('Error in conversion')
+                    
+                
+                #GET DAC THR
+                if cmd == 'getdac':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: getdac")
 
-                    #GET Temp
-                    if cmd == 'gettemp':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: getdac")
+                #GET Temp
+                if cmd == 'gettemp':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: getdac")
 
-                    #RESET
-                    elif cmd == 'reset':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                            print(f"[Error] Invalid command ({cmd}). Example: reset")
+                #RESET
+                elif cmd == 'reset':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                        print(f"[Error] Invalid command ({cmd}). Example: reset")
 
-                    #SET ID
-                    elif cmd == 'setid':
-                        try:
-                            num = command.split()[1]
+                #SET ID
+                elif cmd == 'setid':
+                    try:
+                        num = command.split()[1]
 
-                            if((int(num) < 62) or (int(num) == BOARD__MAGIC_ID)):    
-                                num = int(num)+33 #offset ascii table
-                                #payload = bytes.fromhex(hex(num)[2:])
-                                payload = chr(num).encode('ASCII')
-                                formatted = format_command(cmd,payload)
-                                if formatted:
-                                    semaphore.acquire()
-                                    ser.write(formatted)
-                                    semaphore.release()
-                                    print(f"[Sent] {formatted}")
-                            else:
-                                print(f"[Error] Maximum id = 63 ({cmd}). Example: setid 23")
-                        except:
-                             print(f"[Error] Invalid command ({cmd}). Example: setid 23")
-
-                    # GET ID
-                    elif cmd == 'getid':
-                        formatted = format_command(cmd,0)
-                        if formatted:
-                            semaphore.acquire()
-                            ser.write(formatted)
-                            semaphore.release()
-                            print(f"[Sent] {formatted}")
-                        else:
-                             print(f"[Error] Invalid command ({cmd}). Example: getid")
-
-                    #SET OVERV
-                    elif cmd == 'setoverv':
-                        try:
-                            overv_str = command.split()[1].lower()
-                            thr_n = int(float(overv_str)*1000 )
-                            thr_dk = int(thr_n/10000)
-                            thr_k = int((thr_n%10000)/1000)
-                            thr_h = int((thr_n%1000)/100)
-                            thr_d = int((thr_n%100)/10)
-                            thr_u = int((thr_n%10))
-                            thr_str = str(thr_dk)+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
-                            payload =  bytes(thr_str,"ascii")
+                        if((int(num) < 62) or (int(num) == BOARD__MAGIC_ID)):    
+                            num = int(num)+33 #offset ascii table
+                            #payload = bytes.fromhex(hex(num)[2:])
+                            payload = chr(num).encode('ASCII')
                             formatted = format_command(cmd,payload)
                             if formatted:
                                 semaphore.acquire()
                                 ser.write(formatted)
                                 semaphore.release()
                                 print(f"[Sent] {formatted}")
-                            else:
-                                print(f"[Error] Invalid command ({cmd}). Example: setoverv 16.5")
+                        else:
+                            print(f"[Error] Maximum id = 63 ({cmd}). Example: setid 23")
+                    except:
+                         print(f"[Error] Invalid command ({cmd}). Example: setid 23")
 
-                        except:
-                            print('Error in conversion')
+                # GET ID
+                elif cmd == 'getid':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: getid")
 
-
-                    #SET UNDERV
-                    elif cmd == 'setundv':
-                        try:
-                            undv_str = command.split()[1].lower()
-                            thr_n = int(float(undv_str)*1000 )
-                            thr_dk = int(thr_n/10000)
-                            thr_k = int((thr_n%10000)/1000)
-                            thr_h = int((thr_n%1000)/100)
-                            thr_d = int((thr_n%100)/10)
-                            thr_u = int((thr_n%10))
-                            thr_str = str(thr_dk)+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
-                            payload =  bytes(thr_str,"ascii")
-                            formatted = format_command(cmd,payload)
-                            if formatted:
-                                semaphore.acquire()
-                                ser.write(formatted)
-                                semaphore.release()
-                                print(f"[Sent] {formatted}")
-                            else:
-                                print(f"[Error] Invalid command ({cmd}). Example: setdac")
-
-                        except:
-                            print('Error in conversion')
-
-                    #SET OVERT
-                    elif cmd == 'setovert':
-                        try:
-                            overt_str = command.split()[1].lower()
-                            thr_n = int(float(overt_str)*100 )
-                            thr_sign = '+'
-                            if (thr_n <0):
-                                thr_sign = '-'
-                            thr_n = abs(thr_n)
-                            thr_k = int(thr_n/1000)
-                            thr_h = int((thr_n%1000)/100)
-                            thr_d = int((thr_n%100)/10)
-                            thr_u = int((thr_n%10))
-                            thr_str = thr_sign+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
-                            payload =  bytes(thr_str,"ascii")
-                            formatted = format_command(cmd,payload)
-                            if formatted:
-                                semaphore.acquire()
-                                ser.write(formatted)
-                                semaphore.release()
-                                print(f"[Sent] {formatted}")
-                            else:
-                                print(f"[Error] Invalid command ({cmd}). Example: setovert 50.5")
-
-                        except:
-                            print('Error in conversion')
-
-                    #SET UNDERTEMPERATURE
-                    elif cmd == 'setundt':
-                        try:
-                            overt_str = command.split()[1].lower()
-                            thr_n = int(float(overt_str)*100 )
-                            thr_sign = '+'
-                            if (thr_n <0):
-                                thr_sign = '-'
-                            thr_n = abs(thr_n)
-                            thr_k = int(thr_n/1000)
-                            thr_h = int((thr_n%1000)/100)
-                            thr_d = int((thr_n%100)/10)
-                            thr_u = int((thr_n%10))
-                            thr_str = thr_sign+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
-                            payload =  bytes(thr_str,"ascii")
-                            formatted = format_command(cmd,payload)
-                            if formatted:
-                                semaphore.acquire()
-                                ser.write(formatted)
-                                semaphore.release()
-                                print(f"[Sent] {formatted}")
-                            else:
-                                print(f"[Error] Invalid command ({cmd}). Example: setundt -5.5")
-
-                        except:
-                            print('Error in conversion')
-
-                    #GET CONFIG
-                    elif cmd == 'getconf':
-                        formatted = format_command(cmd,0)
+                #SET OVERV
+                elif cmd == 'setoverv':
+                    try:
+                        overv_str = command.split()[1].lower()
+                        thr_n = int(float(overv_str)*1000 )
+                        thr_dk = int(thr_n/10000)
+                        thr_k = int((thr_n%10000)/1000)
+                        thr_h = int((thr_n%1000)/100)
+                        thr_d = int((thr_n%100)/10)
+                        thr_u = int((thr_n%10))
+                        thr_str = str(thr_dk)+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
+                        payload =  bytes(thr_str,"ascii")
+                        formatted = format_command(cmd,payload)
                         if formatted:
                             semaphore.acquire()
                             ser.write(formatted)
                             semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
-                             print(f"[Error] Invalid command ({cmd}). Example: getconf")
+                            print(f"[Error] Invalid command ({cmd}). Example: setoverv 16.5")
 
-                    # START COUNT
-                    elif cmd == 'start':
-                        formatted = format_command(cmd,0)
+                    except:
+                        print('Error in conversion')
+                
+
+                #SET UNDERV
+                elif cmd == 'setundv':
+                    try:
+                        undv_str = command.split()[1].lower()
+                        thr_n = int(float(undv_str)*1000 )
+                        thr_dk = int(thr_n/10000)
+                        thr_k = int((thr_n%10000)/1000)
+                        thr_h = int((thr_n%1000)/100)
+                        thr_d = int((thr_n%100)/10)
+                        thr_u = int((thr_n%10))
+                        thr_str = str(thr_dk)+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
+                        payload =  bytes(thr_str,"ascii")
+                        formatted = format_command(cmd,payload)
                         if formatted:
                             semaphore.acquire()
                             ser.write(formatted)
                             semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
-                             print(f"[Error] Invalid command ({cmd}). Example: start")
+                            print(f"[Error] Invalid command ({cmd}). Example: setdac")
 
-                    # STOP COUNT
-                    elif cmd == 'stop':
-                        formatted = format_command(cmd,0)
+                    except:
+                        print('Error in conversion')
+
+                #SET OVERT
+                elif cmd == 'setovert':
+                    try:
+                        overt_str = command.split()[1].lower()
+                        thr_n = int(float(overt_str)*100 )
+                        thr_sign = '+'
+                        if (thr_n <0):
+                            thr_sign = '-'
+                        thr_n = abs(thr_n)
+                        thr_k = int(thr_n/1000)
+                        thr_h = int((thr_n%1000)/100)
+                        thr_d = int((thr_n%100)/10)
+                        thr_u = int((thr_n%10))
+                        thr_str = thr_sign+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
+                        payload =  bytes(thr_str,"ascii")
+                        formatted = format_command(cmd,payload)
                         if formatted:
                             semaphore.acquire()
                             ser.write(formatted)
                             semaphore.release()
                             print(f"[Sent] {formatted}")
                         else:
-                             print(f"[Error] Invalid command ({cmd}). Example: stop")
+                            print(f"[Error] Invalid command ({cmd}). Example: setovert 50.5")
 
-                    elif cmd == 'help':
-                        print(HELP_CMD_MSG)
+                    except:
+                        print('Error in conversion')
+                
+                #SET UNDERTEMPERATURE
+                elif cmd == 'setundt':
+                    try:
+                        overt_str = command.split()[1].lower()
+                        thr_n = int(float(overt_str)*100 )
+                        thr_sign = '+'
+                        if (thr_n <0):
+                            thr_sign = '-'
+                        thr_n = abs(thr_n)
+                        thr_k = int(thr_n/1000)
+                        thr_h = int((thr_n%1000)/100)
+                        thr_d = int((thr_n%100)/10)
+                        thr_u = int((thr_n%10))
+                        thr_str = thr_sign+str(thr_k)+str(thr_h)+str(thr_d)+str(thr_u)
+                        payload =  bytes(thr_str,"ascii")
+                        formatted = format_command(cmd,payload)
+                        if formatted:
+                            semaphore.acquire()
+                            ser.write(formatted)
+                            semaphore.release()
+                            print(f"[Sent] {formatted}")
+                        else:
+                            print(f"[Error] Invalid command ({cmd}). Example: setundt -5.5")
 
-                else:
+                    except:
+                        print('Error in conversion')
+
+                #GET CONFIG
+                elif cmd == 'getconf':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: getconf")
+                    
+                # START COUNT
+                elif cmd == 'start':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: start")
+
+                # STOP COUNT
+                elif cmd == 'stop':
+                    formatted = format_command(cmd,0)
+                    if formatted:
+                        semaphore.acquire()
+                        ser.write(formatted)
+                        semaphore.release()
+                        print(f"[Sent] {formatted}")
+                    else:
+                         print(f"[Error] Invalid command ({cmd}). Example: stop")
+                
+                elif cmd == 'help':
                     print(HELP_CMD_MSG)
-            except KeyboardInterrupt:
-                print("\n[Info] Command input stopped.")
-                break
+
+            else:
+                print(HELP_CMD_MSG)
+        except KeyboardInterrupt:
+            print("\n[Info] Command input stopped.")
+            break
 
 
 #Program entry point
@@ -492,7 +492,7 @@ def main():
             threading.Thread(target=periodic_trigger_msg, args=(ser,trigger_period), daemon=True).start()
             threading.Thread(target=listen_for_commands, args=(ser,), daemon=True).start()
             # Start the GUI
-            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_LOG_FILE)
+            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID)
     except serial.SerialException as e:
         print(f"Serial error: {e}")
     except KeyboardInterrupt:
