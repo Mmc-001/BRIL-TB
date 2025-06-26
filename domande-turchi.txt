@@ -3,4 +3,5 @@ Punti da chiedere a Turchi:
 - gettemp ritorna temperatura, voltaggio, uCtemperatura, come possiamo separare le info in 2 o addirittura 3?
 - setdac chn valore non viene scritto nel log, come fare a scriverlo?
 - il messaggio no acquisizione viene scritto ogni PERIOD, come fare a rallentarlo per non riempire il command_log file?
-- quando si scrive un comando e nello stesso momento parte uno "sparo" di getdata l'output si sovrappone e va cancellato il comando (che però rimane invisibile) altrimenti se lo si riscrive il "pezzo" di comando prima e quello dopo si sommano e tale comando non viene accettato.
+- quando si scrive un comando e nello stesso momento parte uno "sparo" di getdata l'output si sovrappone e va cancellato il comando (che però rimane invisibile) altrimenti se lo si riscrive il "pezzo" di comando prima e quello dopo si sommano e tale comando non viene accettato
+- nel received_data.txt compare ogni tanto ==================USART INITIALISED (possibile output del comando reset), può essere spostato nel command log?
