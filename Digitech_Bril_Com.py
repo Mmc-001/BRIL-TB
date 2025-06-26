@@ -245,7 +245,7 @@ def listen_for_commands(ser):
                             print(f"[Sent] {formatted}")
                             with open(CTRL_LOG_FILE, 'a') as ctrl_file:
                                 cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                                ctrl_file.write(f"{cur_time}\t Set DAC: CHN={dac_channel_str}, THR={thr_v}V\n")
+                                ctrl_file.write(f"{cur_time}\t Set DAC: CHN = {dac_channel_str}, THR = {thr_v}V\n")
                                 ctrl_file.flush()
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")

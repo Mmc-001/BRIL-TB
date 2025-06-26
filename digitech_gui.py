@@ -26,59 +26,61 @@ HELP_CMD_MSG = """
     help         \t     (--local)   \t      Print this help message         \t      
 """
 
-def send(cmd, arg1, arg2, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE):
-    with open(CTRL_FILE, 'a') as ctrl_file:
-        try:
-            if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf','start','stop'}:
-                formatted = format_command(cmd, 0)
-            elif cmd == 'settime':
-                payload = datetime.datetime.now().strftime("%H%M%S").encode("ascii")
+def send(cmd, arg1, arg2, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE=None):
+    try:
+        if cmd in {'getstatus','getdata','getdatetime','getdac','gettemp','reset','getid','getconf','start','stop'}:
+            formatted = format_command(cmd, 0)
+        elif cmd == 'settime':
+            payload = datetime.datetime.now().strftime("%H%M%S").encode("ascii")
+            formatted = format_command(cmd, payload)
+        elif cmd == 'setdate':
+            payload = datetime.datetime.now().strftime("%d%m%Y").encode("ascii")
+            formatted = format_command(cmd, payload)
+        elif cmd == 'setdac':
+            if not arg1 or not arg2: return
+            payload = DAC_CHANNELS_ID.get(arg1.lower())
+            if payload is None: return
+            try: thr_v = float(arg2)
+            except: return
+            thr_n = int(thr_v * 1000)
+            thr_str = f"{thr_n//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
+            payload += thr_str.encode("ascii")
+            formatted = format_command(cmd, payload)
+            if CTRL_FILE is not None:
+                with open(CTRL_FILE, 'a') as ctrl_file:
+                    cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    ctrl_file.write(f"{cur_time}\t Set DAC: CHN = {arg1}, THR = {thr_v}V\n")
+                    ctrl_file.flush()
+        elif cmd == 'setid':
+            if not arg1: return
+            try: num = int(arg1)
+            except: return
+            if num < 62 or num == BOARD__MAGIC_ID:
+                payload = chr(num+33).encode('ASCII')
                 formatted = format_command(cmd, payload)
-            elif cmd == 'setdate':
-                payload = datetime.datetime.now().strftime("%d%m%Y").encode("ascii")
-                formatted = format_command(cmd, payload)
-            elif cmd == 'setdac':
-                if not arg1 or not arg2: return
-                payload = DAC_CHANNELS_ID.get(arg1.lower())
-                if payload is None: return
-                try: thr_v = float(arg2)
-                except: return
-                thr_n = int(thr_v * 1000)
-                thr_str = f"{thr_n//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
-                payload += thr_str.encode("ascii")
-                formatted = format_command(cmd, payload)
-                ctrl_file.write(f"Set DAC {arg1} to {thr_v} V\n")
-                ctrl_file.flush()
-            elif cmd == 'setid':
-                if not arg1: return
-                try: num = int(arg1)
-                except: return
-                if num < 62 or num == BOARD__MAGIC_ID:
-                    payload = chr(num+33).encode('ASCII')
-                    formatted = format_command(cmd, payload)
-                else: return
-            elif cmd in {'setoverv','setundv'}:
-                if not arg1: return
-                try: val = float(arg1)
-                except: return
-                thr_n = int(val * 1000)
-                thr_str = f"{thr_n//10000}{(thr_n%10000)//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
-                payload = thr_str.encode("ascii")
-                formatted = format_command(cmd, payload)
-            elif cmd in {'setovert','setundt'}:
-                if not arg1: return
-                try: val = float(arg1)
-                except: return
-                thr_n = int(val * 100)
-                thr_sign = '-' if thr_n < 0 else '+'
-                thr_n = abs(thr_n)
-                thr_str = f"{thr_sign}{thr_n//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
-                payload = thr_str.encode("ascii")
-                formatted = format_command(cmd, payload)
-            else:
-                return
-            if formatted: serial_port.write(formatted)
-        except: pass
+            else: return
+        elif cmd in {'setoverv','setundv'}:
+            if not arg1: return
+            try: val = float(arg1)
+            except: return
+            thr_n = int(val * 1000)
+            thr_str = f"{thr_n//10000}{(thr_n%10000)//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
+            payload = thr_str.encode("ascii")
+            formatted = format_command(cmd, payload)
+        elif cmd in {'setovert','setundt'}:
+            if not arg1: return
+            try: val = float(arg1)
+            except: return
+            thr_n = int(val * 100)
+            thr_sign = '-' if thr_n < 0 else '+'
+            thr_n = abs(thr_n)
+            thr_str = f"{thr_sign}{thr_n//1000}{(thr_n%1000)//100}{(thr_n%100)//10}{thr_n%10}"
+            payload = thr_str.encode("ascii")
+            formatted = format_command(cmd, payload)
+        else:
+            return
+        if formatted: serial_port.write(formatted)
+    except: pass
 
 def channel_dropdown(var, dac_frame, DAC_CHANNELS_ID):
     return ttk.OptionMenu(dac_frame, var, 'a', *DAC_CHANNELS_ID.keys())
@@ -256,9 +258,9 @@ def start_gui(serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTR
     root.grid_columnconfigure(1, weight=1)
     # Button definitions
     board_buttons = [
-        ("Reset", 'reset', None, None),
         ("Get status", 'getstatus', None, None),
         ("Get data", 'getdata', None, None),
+        ("Reset", 'reset', None, None),
     ]
     datetime_buttons = [
         ("Set date (now)", 'setdate', None, None),
@@ -270,7 +272,7 @@ def start_gui(serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTR
         ("Get DAC", 'getdac', None, None),
     ]
     id_buttons = [
-        ("Set ID", 'setid', ("New ID:", tk.StringVar(), ttk.Entry), None),
+        # ("Set ID", 'setid', ("New ID:", tk.StringVar(), ttk.Entry), None),
         ("Get ID", 'getid', None, None),
     ]
     volt_buttons = [
@@ -282,7 +284,7 @@ def start_gui(serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTR
         ("Set underTemp", 'setundt', ("Thr (°C):", tk.StringVar(), ttk.Entry), None),
     ]
     # Partial send function for button callbacks
-    send_func = lambda c, a1, a2: send(c, a1, a2, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID)
+    send_func = lambda c, a1, a2: send(c, a1, a2, serial_port, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE=CTRL_FILE)
     add_buttons(board_frame, board_buttons, send_func)
     add_buttons(datetime_frame, datetime_buttons, send_func)
     add_buttons(dac_frame, dac_buttons, send_func, dac_frame, DAC_CHANNELS_ID)
@@ -314,4 +316,4 @@ if __name__ == "__main__":
         return f"<{cmd}|{payload}>".encode('ascii')
     DAC_CHANNELS_ID = {k: bytes([ord(k)]) for k in 'abcdefgh'}
     BOARD__MAGIC_ID = 67  # Example value
-    start_gui(DummySerial(), dummy_format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID)
+    start_gui(DummySerial(), dummy_format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE='ctrl_log.txt')
