@@ -16,7 +16,7 @@ import datetime
 DEFAULT_OUTPUT_PATH = "C:\\Users\\TetraBall!\\OneDrive\\scan_thr_tetraball"
 # DEFAULT_OUTPUT_PATH = "."
 
-DEBUG = False
+DEBUG = True
 
 SERIAL_PORT = ''
 BAUD_RATE = 115200
@@ -33,24 +33,24 @@ def format_command(board=BOARD_MAGIC_ID, cmd=None, payload=None):
     SLAVE_ID = bytes.fromhex(hex(board + BOARD_ID_OFFSET)[2:])
     #
     commands_map = {
-        'getstatus'  : lambda p:    SLAVE_ID + bytes([ord("a")]) + CMD_TERMINATOR,
-        'getdata'    : lambda p:    SLAVE_ID + bytes([ord("b")]) + CMD_TERMINATOR,
-        'setdate'    : lambda p:    SLAVE_ID + bytes([ord("c")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'settime'    : lambda p:    SLAVE_ID + bytes([ord("d")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'getdatetime': lambda p:    SLAVE_ID + bytes([ord("e")]) + CMD_TERMINATOR,
-        'getdac'     : lambda p:    SLAVE_ID + bytes([ord("f")]) + CMD_TERMINATOR,
-        'setdac'     : lambda p:    SLAVE_ID + bytes([ord("g")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'gettemp'    : lambda p:    SLAVE_ID + bytes([ord("h")]) + CMD_TERMINATOR,
-        'reset'      : lambda p:    SLAVE_ID + bytes([ord("i")]) + CMD_TERMINATOR,
-        'setid'      : lambda p:    SLAVE_ID + bytes([ord("j")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'getid'      : lambda p:    SLAVE_ID + bytes([ord("k")]) + CMD_TERMINATOR,
-        'setoverv'   : lambda p:    SLAVE_ID + bytes([ord("l")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'setundv'    : lambda p:    SLAVE_ID + bytes([ord("m")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'setovert'   : lambda p:    SLAVE_ID + bytes([ord("n")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'setundt'    : lambda p:    SLAVE_ID + bytes([ord("o")]) + bytes(p, "ascii") + CMD_TERMINATOR,
-        'getconf'    : lambda p:    SLAVE_ID + bytes([ord("p")]) + CMD_TERMINATOR,
-        'start'      : lambda p:    SLAVE_ID + bytes([ord("q")]) + CMD_TERMINATOR,
-        'stop'       : lambda p:    SLAVE_ID + bytes([ord("r")]) + CMD_TERMINATOR,
+        'getstatus'  : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("a")]) + CMD_TERMINATOR,
+        'getdata'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("b")]) + CMD_TERMINATOR,
+        'setdate'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("c")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'settime'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("d")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'getdatetime': lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("e")]) + CMD_TERMINATOR,
+        'getdac'     : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("f")]) + CMD_TERMINATOR,
+        'setdac'     : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("g")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'gettemp'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("h")]) + CMD_TERMINATOR,
+        'reset'      : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("i")]) + CMD_TERMINATOR,
+        'setid'      : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("j")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'getid'      : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("k")]) + CMD_TERMINATOR,
+        'setoverv'   : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("l")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'setundv'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("m")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'setovert'   : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("n")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'setundt'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("o")]) + bytes(p, "ascii") + CMD_TERMINATOR,
+        'getconf'    : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("p")]) + CMD_TERMINATOR,
+        'start'      : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("q")]) + CMD_TERMINATOR,
+        'stop'       : lambda p:    CMD_TERMINATOR + SLAVE_ID + bytes([ord("r")]) + CMD_TERMINATOR,
     }
     formatter = commands_map.get(cmd.lower())
     if formatter:
