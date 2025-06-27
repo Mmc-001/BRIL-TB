@@ -1,0 +1,42 @@
+TETRABALL - ISTRUZIONI
+
+Credenziali:
+- AnyDesk
+    ID:         1748977051
+    Password:   TetraBall!
+
+Nomenclatura file:
+- cartella desktop: Digitech>daq-gui-stabile_firmware2
+    - Digitech_Bril_Com(.py): script principale di acquisizione
+    - digitech_gui(.py): script di definizione dell'interfaccia, NON MODIFICARE
+    - scan_threshold(.py): script per eseguire threshold scan tramite interfaccia
+    - received_data(.txt): file di output dell'acquisizione principale
+    - command_log(.txt): file di log dei comandi inviati al sistema tramite scritp python o tramite interfaccia
+- BRIL_DAQ(.bat): file batch presente sul desktop che avvia la comunicazione con la scheda direttamente dal desktop
+
+DAQ - operazione normale:
+- Una volta connessi al miniPC tramite AnyDesk, per avviare la comunicazione con la scheda digitale via porta seriale, fare doppio-click sul file BRIL_DAQ presente sul desktop: tale script avvia automaticamente il programma di acquisizione corredato di interfaccia grafica. Lo script Digitech_Bril_Com, una volta avviato, sincronizza automaticamente l'ora del microcontroller con quella del miniPC
+
+- Prima che la comunicazione sia stabilita e la scheda sia pronta a ricevere comandi (via interfaccia o terminale) passano 10 secondi
+
+- Per settare le soglie delle singole schede analogiche (una sola soglia per ciascun gruppo di 6 canali), utilizzare i campi relativi al tasto Set DAC (soglia in Volt, cifre decimali separate da punto)
+
+- Per avviare l'acquisizione (i cui dati verranno appesi alla fine del file received_data(.txt) se presente, altrimenti viene ricreato: per ora tale file è collocato di default nella cartella Desktop>Digitech>daq-gui-stabile_firmware2) cliccare il tasto Start Acquisition: allo stato attuale il software accumula dati leggendo i canali una volta al secondo e poi li scrive nel file txt svuotando il buffer ogni 20 secondi (trigger periodico, modificabile nello script Digitech_Bril_Com)
+
+- NOTA BENE: per fermare l'acquisizione, cliccare sul tasto Stop Acquisition: il comando viene inviato, ma i dati presenti nel buffer al momento dello Stop vengono comunque inviati alla fine del trigger periodico
+
+- Per interrompere la comunicazione con la scheda, chiudere l'interfaccia grafica con la X rossa in alto a destra
+
+- ATTENZIONE: se si chiude l'interfaccia grafica senza aver interrotto l'acquisizione dati con Stop Acquisition, al prossimo avvio della scheda essa riprenderà ad acquisire subito (in quanto il bit di status che indica l'acquisizione o meno non viene ancora resettato automaticamente a ogni avvio)
+
+STATUS - codici
+Lo status della scheda digitale, a connessione attiva, è indicato da un codice ottenibile tramite il tasto Get Status oppure leggibile come ultimo valore di ciascuna linea di dati durante l'acquisizione. Ciascun singolo codice corrisponde a una diversa potenza di 2 perchè ogni tipo di status è codificato da un bit (0 o 1) in una word da 8 bit (da 0 a 7). I codici possibili sono:
+- 64: comunicazione attiva, funzionamento normale, acquisizione accesa
+        Ad acquisizione normale attiva, eventuali altri status sono sommati a 64 (es. 66 = acquisizione attiva ma temperatura sotto soglia)
+- 0 : comunicazione attiva, funzionamento normale, acquisizione spenta
+- 1 : SD error, blocca l'acquisizione dati
+- 2 : temperatura della sonda termica è sotto UNDERT_THR (soglia bassa)
+- 4 : temperatura della sonda termica è sopra OVERT_THR (soglia alta)
+- 8 : tensione di alimentazione è sotto UNDERV_THR (soglia bassa)
+- 16: tensione di alimentazione è sopra UNDERV_THR (soglia bassa)
+- 32: la scheda SD ha superato il limite di 1000 file di backup giornalieri (non blocca l'acquisizione normale)
