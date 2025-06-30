@@ -68,7 +68,7 @@ def read_from_serial(ser):
                 if line:
                     cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S");
                     print("["+cur_time+"] \t"+f"{line}")
-                    if(line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t'): #control line
+                    if(line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t' and not line.startswith(">Data")): #control line
                         ctrl_file.write(cur_time+"\t"+line + '\n')
                         ctrl_file.flush()
                     else:               #data line
