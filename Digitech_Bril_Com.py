@@ -158,7 +158,7 @@ def format_command(cmd_char, payload):
         return None
 
 #thread for periodically triggering data messages
-def periodic_trigger_msg(ser,period):
+def periodic_trigger_msg(ser,period=PERIODIC_TRIGGER_PERIOD):
     print("Start collecting data in 10s")
     time.sleep(10)
     while True:
@@ -171,7 +171,7 @@ def periodic_trigger_msg(ser,period):
                 semaphore.release()
         except:
             print("Error Periodic trigger")
-        time.sleep(PERIODIC_TRIGGER_PERIOD)
+        time.sleep(period)
 
 #Thread for listen user inputs and send commands to board
 def listen_for_commands(ser):
@@ -491,9 +491,9 @@ def listen_for_commands(ser):
 
 #Program entry point
 def main():
-    trigger_period = 10
+    trigger_period = PERIODIC_TRIGGER_PERIOD
     try:
-        with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser, open(get_output_file, 'a') as file:
+        with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser, open(get_output_file(), 'a') as file:
             print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud...")
 
             # Synchronize time with the board at startup
