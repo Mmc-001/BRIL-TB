@@ -3,15 +3,31 @@ import threading
 import time
 import datetime
 import digitech_gui
-from digitech_gui import HELP_CMD_MSG
+import os
+
 
 # Configure serial port
 SERIAL_PORT = 'COM6'#Change to your port, e.g., '/dev/ttyUSB0' on Linux
 # PC ANET: COM4 (USB destra)
 # Mini PC: COM6 (USB bassa lato alimentazione)
 BAUD_RATE = 115200
-OUTPUT_FILE = 'received_data.txt'
-CTRL_LOG_FILE = 'command_log.txt'
+
+DEFAULT_OUTPUT_PATH = "C:\\Users\\TetraBall!\\OneDrive\\received_data_tetraball"
+# DEFAULT_OUTPUT_PATH = "."
+os.makedirs(DEFAULT_OUTPUT_PATH, exist_ok=True)
+
+OUTPUT_FILE = 'received_data'
+CTRL_LOG_FILE = 'command_log'
+
+def get_log_file():
+    datestamp = datetime.datetime.now().strftime("%Y%m%d")
+    return os.path.join(DEFAULT_OUTPUT_PATH, CTRL_LOG_FILE+f"_{datestamp}.txt")
+
+def get_output_file():
+    datestamp = datetime.datetime.now().strftime("%Y%m%d")
+    return os.path.join(DEFAULT_OUTPUT_PATH, OUTPUT_FILE+f"_{datestamp}.txt")
+
+
 
 PERIODIC_TRIGGER_PERIOD = 20        #seconds
 
@@ -30,21 +46,29 @@ CMD_TERMINATOR = bytes.fromhex('0a')
 DAC_REF_VOLTAGE = 3
 DAC_MAX_N = 1023
 
-# HELP_CMD_MSG = """
-# USER INPUT       \t     Description	        Arguments     \n
-# ========================================================= \n
-    # getStatus    \t		Get Status		         --       \n
-    # getData      \t		Get Data		         --       \n
-    # SetDate      \t		Set Date		         --       \n
-    # SetTime      \t		Set Time		         --       \n
-    # getDateTime  \t		Get Date and Time	     --       \n
-    # getDAC       \t		Get DAC Threshold	     --       \n
-    # setDAC       \t		Set DAC Threshold	CHID thr_V    \n
-    # getID        \t		Get Board ID		              \n
-    # setID        \t		Set Board ID		   newID      \n
-    # getTemp      \t		Get Temperature		\n
-    # reset        \t		Soft Reset		   \n
-# """
+HELP_CMD_MSG = """
+    USER INPUT   \t     OPCODE      \t      Description                     \t      Arguments
+    ===============================================================================================
+    getStatus    \t     a (0x61)    \t      Get Status                      \t      
+    getData      \t     b (0x62)    \t      Get Data                        \t      
+    SetDate      \t     c (0x63)    \t      Set Date                        \t      [args]
+    SetTime      \t     d (0x64)    \t      Set Time                        \t      [args]
+    getDateTime  \t     e (0x65)    \t      Get Date and Time               \t      
+    getDAC       \t     f (0x66)    \t      Get DAC Threshold               \t      
+    setDAC       \t     g (0x67)    \t      Set DAC Threshold               \t      [CHID thr_V]
+    getTemp      \t     h (0x68)    \t      Get Temperature                 \t      
+    reset        \t     i (0x69)    \t      Soft Reset                      \t      
+    setID        \t     j (0x6a)    \t      Set Board ID                    \t      [newID]
+    getID        \t     k (0x6b)    \t      Get Board ID                    \t      
+    setoverv     \t     l (0x6c)    \t      Set Over Voltage Thr            \t      [thr_V]
+    setundv      \t     m (0x6d)    \t      Set Under Voltage Thr           \t      [thr_V]
+    setovert     \t     n (0x6e)    \t      Set Overtemperature Thr         \t      [thr_T]
+    setundt      \t     o (0x6f)    \t      Set Undertemperature Thr        \t      [thr_T]
+    getconf      \t     p (0x70)    \t      Get Volt and Temp Thr Config    \t      
+    start        \t     q (0x71)    \t      Start Data Acquisition          \t      
+    stop         \t     r (0x72)    \t      Stop Data Acquisition           \t      
+    help         \t     (--local)   \t      Print this help message         \t      
+"""
 
 DAC_CHANNELS_ID = {
         'a' : bytes([ord("a")]),
@@ -59,24 +83,26 @@ DAC_CHANNELS_ID = {
 
 #Thread for serial read and log
 def read_from_serial(ser):
-    with open(OUTPUT_FILE, 'a') as file, open(CTRL_LOG_FILE,'a') as ctrl_file:
-        while True:
-            # Acquire the semaphore to ensure only one thread accesses the serial port at a time
-            semaphore.acquire()
-            if ser.in_waiting:
-                line = ser.readline().decode('utf-8', errors='ignore').strip()
-                if line:
-                    cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S");
-                    print("["+cur_time+"] \t"+f"{line}")
-                    if(line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t' and not line.startswith(">Data")): #control line
+    while True:
+        # Acquire the semaphore to ensure only one thread accesses the serial port at a time
+        semaphore.acquire()
+        if ser.in_waiting:
+            line = ser.readline().decode('utf-8', errors='ignore').strip()
+            if line:
+                cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S");
+                print("["+cur_time+"] \t"+f"{line}")
+                # Only write to ctrl_file if line starts with >, =, U, or tab, but NOT if it starts with '>Data'
+                if ( (line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t') and not line.lstrip().startswith('>Data') ):
+                    with open(get_log_file(), 'a') as ctrl_file:
                         ctrl_file.write(cur_time+"\t"+line + '\n')
                         ctrl_file.flush()
-                    else:               #data line
+                else:               #data line
+                    with open(get_output_file(), 'a') as file:
                         file.write(cur_time+"\t"+line + '\n')
                         file.flush()
-            # Release the semaphore to allow other threads to access the serial port
-            semaphore.release()
-            time.sleep(0.1)
+        # Release the semaphore to allow other threads to access the serial port
+        semaphore.release()
+        time.sleep(0.1)
 
 """
 USER INPUT    OPCODE              Description
@@ -243,9 +269,9 @@ def listen_for_commands(ser):
                             ser.write(formatted)
                             semaphore.release()
                             print(f"[Sent] {formatted}")
-                            with open(CTRL_LOG_FILE, 'a') as ctrl_file:
+                            with open(get_log_file(), 'a') as ctrl_file:
                                 cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                                ctrl_file.write(f"{cur_time}\t Set DAC: CHN = {dac_channel_str}, THR = {thr_v}V\n")
+                                ctrl_file.write(f"{cur_time}\t >Set DAC: CHN = {dac_channel_str}, THR = {thr_v}V\n")
                                 ctrl_file.flush()
                         else:
                             print(f"[Error] Invalid command ({cmd}). Example: setdac a 1.3")
@@ -467,7 +493,7 @@ def listen_for_commands(ser):
 def main():
     trigger_period = 10
     try:
-        with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser, open(OUTPUT_FILE, 'a') as file:
+        with serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1) as ser, open(get_output_file, 'a') as file:
             print(f"Listening on {SERIAL_PORT} at {BAUD_RATE} baud...")
 
             # Synchronize time with the board at startup
@@ -492,7 +518,7 @@ def main():
             threading.Thread(target=periodic_trigger_msg, args=(ser,trigger_period), daemon=True).start()
             threading.Thread(target=listen_for_commands, args=(ser,), daemon=True).start()
             # Start the GUI
-            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE=CTRL_LOG_FILE)
+            digitech_gui.start_gui(ser, format_command, DAC_CHANNELS_ID, BOARD__MAGIC_ID, CTRL_FILE=get_log_file())
     except serial.SerialException as e:
         print(f"Serial error: {e}")
     except KeyboardInterrupt:
