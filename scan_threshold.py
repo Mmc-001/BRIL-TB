@@ -209,7 +209,7 @@ class MainWindow(tk.Tk):
             # Compose output filename: base + _DDMMYY_HHMMSS.csv in DEFAULT_OUTPUT_PATH
             base_filename = os.path.splitext(self.txtFile.get())[0]
             ext = os.path.splitext(self.txtFile.get())[1] or ".csv"
-            timestamp = datetime.datetime.now().strftime("%d%m%y_%Hh%Mm")
+            timestamp = datetime.datetime.now().strftime("%d_%m_%Y_%Hh%Mm")
             output_filename = f"{base_filename}_m{min_threshold}_M{max_threshold}_s{step}_{timestamp}{ext}"
             full_output_path = os.path.join(DEFAULT_OUTPUT_PATH, output_filename)
 

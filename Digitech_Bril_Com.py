@@ -20,11 +20,11 @@ OUTPUT_FILE = 'received_data'
 CTRL_LOG_FILE = 'command_log'
 
 def get_log_file():
-    datestamp = datetime.datetime.now().strftime("%Y%m%d")
+    datestamp = datetime.datetime.now().strftime("%d_%m_%Y")
     return os.path.join(DEFAULT_OUTPUT_PATH, CTRL_LOG_FILE+f"_{datestamp}.txt")
 
 def get_output_file():
-    datestamp = datetime.datetime.now().strftime("%Y%m%d")
+    datestamp = datetime.datetime.now().strftime("%d_%m_%Y")
     return os.path.join(DEFAULT_OUTPUT_PATH, OUTPUT_FILE+f"_{datestamp}.txt")
 
 
@@ -92,7 +92,7 @@ def read_from_serial(ser):
                 cur_time = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S");
                 print("["+cur_time+"] \t"+f"{line}")
                 # Only write to ctrl_file if line starts with >, =, U, or tab, but NOT if it starts with '>Data'
-                if ( (line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t') and not line.lstrip().startswith('>Data') ):
+                if ( (line[0] == '>' or line[0] == '=' or line[0] == 'U' or line[0] == '\t' and not line.lstrip().startswith('>Data') ) ):
                     with open(get_log_file(), 'a') as ctrl_file:
                         ctrl_file.write(cur_time+"\t"+line + '\n')
                         ctrl_file.flush()
